@@ -1,0 +1,201 @@
+categoria_id,categoria,familia,linha
+0,Queijos — Linha Básica,Queijos,Linha Básica
+1,Queijos — Linha Premium,Queijos,Linha Premium
+2,Queijos — Linha Food Service,Queijos,Linha Food Service
+3,Queijos — Linha Econômica,Queijos,Linha Econômica
+4,Queijos — Linha Artesanal,Queijos,Linha Artesanal
+5,Queijos — Linha Tradicional,Queijos,Linha Tradicional
+6,Queijos — Linha Leve,Queijos,Linha Leve
+7,Queijos — Linha Profissional,Queijos,Linha Profissional
+8,Frios e Embutidos — Linha Básica,Frios e Embutidos,Linha Básica
+9,Frios e Embutidos — Linha Premium,Frios e Embutidos,Linha Premium
+10,Frios e Embutidos — Linha Food Service,Frios e Embutidos,Linha Food Service
+11,Frios e Embutidos — Linha Econômica,Frios e Embutidos,Linha Econômica
+12,Frios e Embutidos — Linha Artesanal,Frios e Embutidos,Linha Artesanal
+13,Frios e Embutidos — Linha Tradicional,Frios e Embutidos,Linha Tradicional
+14,Frios e Embutidos — Linha Leve,Frios e Embutidos,Linha Leve
+15,Frios e Embutidos — Linha Profissional,Frios e Embutidos,Linha Profissional
+16,Leites e Cremes — Linha Básica,Leites e Cremes,Linha Básica
+17,Leites e Cremes — Linha Premium,Leites e Cremes,Linha Premium
+18,Leites e Cremes — Linha Food Service,Leites e Cremes,Linha Food Service
+19,Leites e Cremes — Linha Econômica,Leites e Cremes,Linha Econômica
+20,Leites e Cremes — Linha Artesanal,Leites e Cremes,Linha Artesanal
+21,Leites e Cremes — Linha Tradicional,Leites e Cremes,Linha Tradicional
+22,Leites e Cremes — Linha Leve,Leites e Cremes,Linha Leve
+23,Leites e Cremes — Linha Profissional,Leites e Cremes,Linha Profissional
+24,Manteigas e Margarinas — Linha Básica,Manteigas e Margarinas,Linha Básica
+25,Manteigas e Margarinas — Linha Premium,Manteigas e Margarinas,Linha Premium
+26,Manteigas e Margarinas — Linha Food Service,Manteigas e Margarinas,Linha Food Service
+27,Manteigas e Margarinas — Linha Econômica,Manteigas e Margarinas,Linha Econômica
+28,Manteigas e Margarinas — Linha Artesanal,Manteigas e Margarinas,Linha Artesanal
+29,Manteigas e Margarinas — Linha Tradicional,Manteigas e Margarinas,Linha Tradicional
+30,Manteigas e Margarinas — Linha Leve,Manteigas e Margarinas,Linha Leve
+31,Manteigas e Margarinas — Linha Profissional,Manteigas e Margarinas,Linha Profissional
+32,Congelados Salgados — Linha Básica,Congelados Salgados,Linha Básica
+33,Congelados Salgados — Linha Premium,Congelados Salgados,Linha Premium
+34,Congelados Salgados — Linha Food Service,Congelados Salgados,Linha Food Service
+35,Congelados Salgados — Linha Econômica,Congelados Salgados,Linha Econômica
+36,Congelados Salgados — Linha Artesanal,Congelados Salgados,Linha Artesanal
+37,Congelados Salgados — Linha Tradicional,Congelados Salgados,Linha Tradicional
+38,Congelados Salgados — Linha Leve,Congelados Salgados,Linha Leve
+39,Congelados Salgados — Linha Profissional,Congelados Salgados,Linha Profissional
+40,Congelados Doces — Linha Básica,Congelados Doces,Linha Básica
+41,Congelados Doces — Linha Premium,Congelados Doces,Linha Premium
+42,Congelados Doces — Linha Food Service,Congelados Doces,Linha Food Service
+43,Congelados Doces — Linha Econômica,Congelados Doces,Linha Econômica
+44,Congelados Doces — Linha Artesanal,Congelados Doces,Linha Artesanal
+45,Congelados Doces — Linha Tradicional,Congelados Doces,Linha Tradicional
+46,Congelados Doces — Linha Leve,Congelados Doces,Linha Leve
+47,Congelados Doces — Linha Profissional,Congelados Doces,Linha Profissional
+48,Massas Frescas — Linha Básica,Massas Frescas,Linha Básica
+49,Massas Frescas — Linha Premium,Massas Frescas,Linha Premium
+50,Massas Frescas — Linha Food Service,Massas Frescas,Linha Food Service
+51,Massas Frescas — Linha Econômica,Massas Frescas,Linha Econômica
+52,Massas Frescas — Linha Artesanal,Massas Frescas,Linha Artesanal
+53,Massas Frescas — Linha Tradicional,Massas Frescas,Linha Tradicional
+54,Massas Frescas — Linha Leve,Massas Frescas,Linha Leve
+55,Massas Frescas — Linha Profissional,Massas Frescas,Linha Profissional
+56,Massas Secas — Linha Básica,Massas Secas,Linha Básica
+57,Massas Secas — Linha Premium,Massas Secas,Linha Premium
+58,Massas Secas — Linha Food Service,Massas Secas,Linha Food Service
+59,Massas Secas — Linha Econômica,Massas Secas,Linha Econômica
+60,Massas Secas — Linha Artesanal,Massas Secas,Linha Artesanal
+61,Massas Secas — Linha Tradicional,Massas Secas,Linha Tradicional
+62,Massas Secas — Linha Leve,Massas Secas,Linha Leve
+63,Massas Secas — Linha Profissional,Massas Secas,Linha Profissional
+64,Farinhas e Misturas — Linha Básica,Farinhas e Misturas,Linha Básica
+65,Farinhas e Misturas — Linha Premium,Farinhas e Misturas,Linha Premium
+66,Farinhas e Misturas — Linha Food Service,Farinhas e Misturas,Linha Food Service
+67,Farinhas e Misturas — Linha Econômica,Farinhas e Misturas,Linha Econômica
+68,Farinhas e Misturas — Linha Artesanal,Farinhas e Misturas,Linha Artesanal
+69,Farinhas e Misturas — Linha Tradicional,Farinhas e Misturas,Linha Tradicional
+70,Farinhas e Misturas — Linha Leve,Farinhas e Misturas,Linha Leve
+71,Farinhas e Misturas — Linha Profissional,Farinhas e Misturas,Linha Profissional
+72,Açúcares e Adoçantes — Linha Básica,Açúcares e Adoçantes,Linha Básica
+73,Açúcares e Adoçantes — Linha Premium,Açúcares e Adoçantes,Linha Premium
+74,Açúcares e Adoçantes — Linha Food Service,Açúcares e Adoçantes,Linha Food Service
+75,Açúcares e Adoçantes — Linha Econômica,Açúcares e Adoçantes,Linha Econômica
+76,Açúcares e Adoçantes — Linha Artesanal,Açúcares e Adoçantes,Linha Artesanal
+77,Açúcares e Adoçantes — Linha Tradicional,Açúcares e Adoçantes,Linha Tradicional
+78,Açúcares e Adoçantes — Linha Leve,Açúcares e Adoçantes,Linha Leve
+79,Açúcares e Adoçantes — Linha Profissional,Açúcares e Adoçantes,Linha Profissional
+80,Chocolates e Coberturas — Linha Básica,Chocolates e Coberturas,Linha Básica
+81,Chocolates e Coberturas — Linha Premium,Chocolates e Coberturas,Linha Premium
+82,Chocolates e Coberturas — Linha Food Service,Chocolates e Coberturas,Linha Food Service
+83,Chocolates e Coberturas — Linha Econômica,Chocolates e Coberturas,Linha Econômica
+84,Chocolates e Coberturas — Linha Artesanal,Chocolates e Coberturas,Linha Artesanal
+85,Chocolates e Coberturas — Linha Tradicional,Chocolates e Coberturas,Linha Tradicional
+86,Chocolates e Coberturas — Linha Leve,Chocolates e Coberturas,Linha Leve
+87,Chocolates e Coberturas — Linha Profissional,Chocolates e Coberturas,Linha Profissional
+88,Recheios e Confeitaria — Linha Básica,Recheios e Confeitaria,Linha Básica
+89,Recheios e Confeitaria — Linha Premium,Recheios e Confeitaria,Linha Premium
+90,Recheios e Confeitaria — Linha Food Service,Recheios e Confeitaria,Linha Food Service
+91,Recheios e Confeitaria — Linha Econômica,Recheios e Confeitaria,Linha Econômica
+92,Recheios e Confeitaria — Linha Artesanal,Recheios e Confeitaria,Linha Artesanal
+93,Recheios e Confeitaria — Linha Tradicional,Recheios e Confeitaria,Linha Tradicional
+94,Recheios e Confeitaria — Linha Leve,Recheios e Confeitaria,Linha Leve
+95,Recheios e Confeitaria — Linha Profissional,Recheios e Confeitaria,Linha Profissional
+96,Óleos e Gorduras — Linha Básica,Óleos e Gorduras,Linha Básica
+97,Óleos e Gorduras — Linha Premium,Óleos e Gorduras,Linha Premium
+98,Óleos e Gorduras — Linha Food Service,Óleos e Gorduras,Linha Food Service
+99,Óleos e Gorduras — Linha Econômica,Óleos e Gorduras,Linha Econômica
+100,Óleos e Gorduras — Linha Artesanal,Óleos e Gorduras,Linha Artesanal
+101,Óleos e Gorduras — Linha Tradicional,Óleos e Gorduras,Linha Tradicional
+102,Óleos e Gorduras — Linha Leve,Óleos e Gorduras,Linha Leve
+103,Óleos e Gorduras — Linha Profissional,Óleos e Gorduras,Linha Profissional
+104,Molhos e Condimentos — Linha Básica,Molhos e Condimentos,Linha Básica
+105,Molhos e Condimentos — Linha Premium,Molhos e Condimentos,Linha Premium
+106,Molhos e Condimentos — Linha Food Service,Molhos e Condimentos,Linha Food Service
+107,Molhos e Condimentos — Linha Econômica,Molhos e Condimentos,Linha Econômica
+108,Molhos e Condimentos — Linha Artesanal,Molhos e Condimentos,Linha Artesanal
+109,Molhos e Condimentos — Linha Tradicional,Molhos e Condimentos,Linha Tradicional
+110,Molhos e Condimentos — Linha Leve,Molhos e Condimentos,Linha Leve
+111,Molhos e Condimentos — Linha Profissional,Molhos e Condimentos,Linha Profissional
+112,Conservas — Linha Básica,Conservas,Linha Básica
+113,Conservas — Linha Premium,Conservas,Linha Premium
+114,Conservas — Linha Food Service,Conservas,Linha Food Service
+115,Conservas — Linha Econômica,Conservas,Linha Econômica
+116,Conservas — Linha Artesanal,Conservas,Linha Artesanal
+117,Conservas — Linha Tradicional,Conservas,Linha Tradicional
+118,Conservas — Linha Leve,Conservas,Linha Leve
+119,Conservas — Linha Profissional,Conservas,Linha Profissional
+120,Grãos e Cereais — Linha Básica,Grãos e Cereais,Linha Básica
+121,Grãos e Cereais — Linha Premium,Grãos e Cereais,Linha Premium
+122,Grãos e Cereais — Linha Food Service,Grãos e Cereais,Linha Food Service
+123,Grãos e Cereais — Linha Econômica,Grãos e Cereais,Linha Econômica
+124,Grãos e Cereais — Linha Artesanal,Grãos e Cereais,Linha Artesanal
+125,Grãos e Cereais — Linha Tradicional,Grãos e Cereais,Linha Tradicional
+126,Grãos e Cereais — Linha Leve,Grãos e Cereais,Linha Leve
+127,Grãos e Cereais — Linha Profissional,Grãos e Cereais,Linha Profissional
+128,Enlatados — Linha Básica,Enlatados,Linha Básica
+129,Enlatados — Linha Premium,Enlatados,Linha Premium
+130,Enlatados — Linha Food Service,Enlatados,Linha Food Service
+131,Enlatados — Linha Econômica,Enlatados,Linha Econômica
+132,Enlatados — Linha Artesanal,Enlatados,Linha Artesanal
+133,Enlatados — Linha Tradicional,Enlatados,Linha Tradicional
+134,Enlatados — Linha Leve,Enlatados,Linha Leve
+135,Enlatados — Linha Profissional,Enlatados,Linha Profissional
+136,Bebidas Frias — Linha Básica,Bebidas Frias,Linha Básica
+137,Bebidas Frias — Linha Premium,Bebidas Frias,Linha Premium
+138,Bebidas Frias — Linha Food Service,Bebidas Frias,Linha Food Service
+139,Bebidas Frias — Linha Econômica,Bebidas Frias,Linha Econômica
+140,Bebidas Frias — Linha Artesanal,Bebidas Frias,Linha Artesanal
+141,Bebidas Frias — Linha Tradicional,Bebidas Frias,Linha Tradicional
+142,Bebidas Frias — Linha Leve,Bebidas Frias,Linha Leve
+143,Bebidas Frias — Linha Profissional,Bebidas Frias,Linha Profissional
+144,Bebidas Quentes — Linha Básica,Bebidas Quentes,Linha Básica
+145,Bebidas Quentes — Linha Premium,Bebidas Quentes,Linha Premium
+146,Bebidas Quentes — Linha Food Service,Bebidas Quentes,Linha Food Service
+147,Bebidas Quentes — Linha Econômica,Bebidas Quentes,Linha Econômica
+148,Bebidas Quentes — Linha Artesanal,Bebidas Quentes,Linha Artesanal
+149,Bebidas Quentes — Linha Tradicional,Bebidas Quentes,Linha Tradicional
+150,Bebidas Quentes — Linha Leve,Bebidas Quentes,Linha Leve
+151,Bebidas Quentes — Linha Profissional,Bebidas Quentes,Linha Profissional
+152,Sucos e Polpas — Linha Básica,Sucos e Polpas,Linha Básica
+153,Sucos e Polpas — Linha Premium,Sucos e Polpas,Linha Premium
+154,Sucos e Polpas — Linha Food Service,Sucos e Polpas,Linha Food Service
+155,Sucos e Polpas — Linha Econômica,Sucos e Polpas,Linha Econômica
+156,Sucos e Polpas — Linha Artesanal,Sucos e Polpas,Linha Artesanal
+157,Sucos e Polpas — Linha Tradicional,Sucos e Polpas,Linha Tradicional
+158,Sucos e Polpas — Linha Leve,Sucos e Polpas,Linha Leve
+159,Sucos e Polpas — Linha Profissional,Sucos e Polpas,Linha Profissional
+160,Sorvetes e Gelados — Linha Básica,Sorvetes e Gelados,Linha Básica
+161,Sorvetes e Gelados — Linha Premium,Sorvetes e Gelados,Linha Premium
+162,Sorvetes e Gelados — Linha Food Service,Sorvetes e Gelados,Linha Food Service
+163,Sorvetes e Gelados — Linha Econômica,Sorvetes e Gelados,Linha Econômica
+164,Sorvetes e Gelados — Linha Artesanal,Sorvetes e Gelados,Linha Artesanal
+165,Sorvetes e Gelados — Linha Tradicional,Sorvetes e Gelados,Linha Tradicional
+166,Sorvetes e Gelados — Linha Leve,Sorvetes e Gelados,Linha Leve
+167,Sorvetes e Gelados — Linha Profissional,Sorvetes e Gelados,Linha Profissional
+168,Descartáveis — Linha Básica,Descartáveis,Linha Básica
+169,Descartáveis — Linha Premium,Descartáveis,Linha Premium
+170,Descartáveis — Linha Food Service,Descartáveis,Linha Food Service
+171,Descartáveis — Linha Econômica,Descartáveis,Linha Econômica
+172,Descartáveis — Linha Artesanal,Descartáveis,Linha Artesanal
+173,Descartáveis — Linha Tradicional,Descartáveis,Linha Tradicional
+174,Descartáveis — Linha Leve,Descartáveis,Linha Leve
+175,Descartáveis — Linha Profissional,Descartáveis,Linha Profissional
+176,Higiene e Limpeza — Linha Básica,Higiene e Limpeza,Linha Básica
+177,Higiene e Limpeza — Linha Premium,Higiene e Limpeza,Linha Premium
+178,Higiene e Limpeza — Linha Food Service,Higiene e Limpeza,Linha Food Service
+179,Higiene e Limpeza — Linha Econômica,Higiene e Limpeza,Linha Econômica
+180,Higiene e Limpeza — Linha Artesanal,Higiene e Limpeza,Linha Artesanal
+181,Higiene e Limpeza — Linha Tradicional,Higiene e Limpeza,Linha Tradicional
+182,Higiene e Limpeza — Linha Leve,Higiene e Limpeza,Linha Leve
+183,Higiene e Limpeza — Linha Profissional,Higiene e Limpeza,Linha Profissional
+184,Embalagens — Linha Básica,Embalagens,Linha Básica
+185,Embalagens — Linha Premium,Embalagens,Linha Premium
+186,Embalagens — Linha Food Service,Embalagens,Linha Food Service
+187,Embalagens — Linha Econômica,Embalagens,Linha Econômica
+188,Embalagens — Linha Artesanal,Embalagens,Linha Artesanal
+189,Embalagens — Linha Tradicional,Embalagens,Linha Tradicional
+190,Embalagens — Linha Leve,Embalagens,Linha Leve
+191,Embalagens — Linha Profissional,Embalagens,Linha Profissional
+192,Proteínas Congeladas — Linha Básica,Proteínas Congeladas,Linha Básica
+193,Proteínas Congeladas — Linha Premium,Proteínas Congeladas,Linha Premium
+194,Proteínas Congeladas — Linha Food Service,Proteínas Congeladas,Linha Food Service
+195,Proteínas Congeladas — Linha Econômica,Proteínas Congeladas,Linha Econômica
+196,Proteínas Congeladas — Linha Artesanal,Proteínas Congeladas,Linha Artesanal
+197,Proteínas Congeladas — Linha Tradicional,Proteínas Congeladas,Linha Tradicional
+198,Proteínas Congeladas — Linha Leve,Proteínas Congeladas,Linha Leve
+199,Proteínas Congeladas — Linha Profissional,Proteínas Congeladas,Linha Profissional

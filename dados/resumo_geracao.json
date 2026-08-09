@@ -1,0 +1,61 @@
+{
+  "linhas": 421861,
+  "linhas_valor_zero": 6894,
+  "pdvs_cadastrados": 4200,
+  "pdvs_ativos_ult_12m": 3025,
+  "receita_ult_12m": 118875334.49,
+  "pareto": {
+    "top_1pct": 0.2531,
+    "top_5pct": 0.5007,
+    "top_10pct": 0.6489,
+    "top_20pct": 0.7978
+  },
+  "sazonalidade_observada": {
+    "1": 0.756,
+    "2": 0.88,
+    "3": 0.938,
+    "4": 0.982,
+    "5": 0.998,
+    "6": 0.982,
+    "7": 0.997,
+    "8": 1.081,
+    "9": 1.01,
+    "10": 1.065,
+    "11": 1.155,
+    "12": 1.156
+  },
+  "sazonalidade_jan_fev": 0.818,
+  "sazonalidade_ago_dez": 1.093,
+  "crescimento_anual": [
+    0.1583,
+    0.0885,
+    0.1392,
+    0.0073
+  ],
+  "crescimento_ult_ano": 0.0073,
+  "crescimento_tendencia": 0.1263,
+  "regimes": {
+    "mensal": 2281,
+    "ciclico": 932,
+    "esporadico": 987
+  },
+  "carteira_min": 30,
+  "carteira_max": 162,
+  "carteira_media": 46.7,
+  "casos_plantados": {
+    "sangramento": 90,
+    "parada": 110,
+    "mix": 80,
+    "voltou": 45,
+    "degrau": 70,
+    "atrito": 1260
+  },
+  "seed": 20260808,
+  "periodo": [
+    "2021-08",
+    "2026-07"
+  ],
+  "categorias": 200,
+  "vendedores": 90,
+  "supervisores": 7
+}

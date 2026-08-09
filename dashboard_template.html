@@ -1,0 +1,1272 @@
+<meta charset="utf-8">
+<title>Termômetro da Carteira</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+/* ==========================================================================
+   Identidade: 2ª via de romaneio. Papel azul-esverdeado de bloco carbonado,
+   tinta azul-preta, e vermelho de carimbo só onde há leitura de risco.
+   Regra que organiza tudo: COR É DADO, TINTA É INTERFACE. A interface não tem
+   cor de destaque própria — seleção é peso e marca de tinta. Assim nenhuma cor
+   de status compete com cromo de UI.
+   ========================================================================== */
+:root {
+  color-scheme: light;
+  --papel:      #E9EEEB;
+  --carta:      #FAFBFA;
+  --carta-2:    #F1F5F2;
+  --tinta:      #141B19;
+  --tinta-2:    #4C5A55;
+  --tinta-3:    #7C8985;
+  --fio:        #CDD8D3;
+  --fio-forte:  #B3C1BB;
+  --sombra:     rgba(20,27,25,.07);
+
+  /* status — validados (six checks) contra a superfície #FAFBFA */
+  --parou:      #7A4038;
+  --sangrando:  #B22A1C;
+  --degradando: #D18A1E;
+  --observar:   #1F7F9C;
+  --estavel:    #5D6B66;
+  --crescendo:  #0E8050;
+  --voltou:     #7350A8;
+  --novo:       #8A8F8C;
+
+  /* rampa ordinal de risco (uma matriz, L monótona, topo claro >= 2:1) */
+  --r0: #EFDCD6; --r1: #D99A8A; --r2: #C87360; --r3: #B04A33; --r4: #8E301C;
+  /* texto sobre as células mais intensas da rampa. No claro a rampa termina
+     escura, então é branco; no escuro ela termina CLARA e branco sumiria. */
+  --sobre-rampa: #FFFFFF;
+
+  --serif: "Palatino Linotype", "Book Antiqua", Palatino, "Iowan Old Style", Georgia, serif;
+  --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "SF Mono", Menlo, "DejaVu Sans Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --papel: #0E1211; --carta: #161A18; --carta-2: #1C221F;
+    --tinta: #EAF0ED; --tinta-2: #A7B3AE; --tinta-3: #7E8B86;
+    --fio: #28312E; --fio-forte: #3A4642; --sombra: rgba(0,0,0,.4);
+    --parou: #A5615A; --sangrando: #DE5744; --degradando: #C9A227;
+    --observar: #2F94B4; --estavel: #7D8A85; --crescendo: #219A66;
+    --voltou: #8E6FCB; --novo: #69716E;
+    --r0: #2A1613; --r1: #78392C; --r2: #A0492F; --r3: #C8613F; --r4: #E68A6E;
+    --sobre-rampa: #141B19;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --papel: #0E1211; --carta: #161A18; --carta-2: #1C221F;
+  --tinta: #EAF0ED; --tinta-2: #A7B3AE; --tinta-3: #7E8B86;
+  --fio: #28312E; --fio-forte: #3A4642; --sombra: rgba(0,0,0,.4);
+  --parou: #A5615A; --sangrando: #DE5744; --degradando: #C9A227;
+  --observar: #2F94B4; --estavel: #7D8A85; --crescendo: #219A66;
+  --voltou: #8E6FCB; --novo: #69716E;
+  --r0: #2A1613; --r1: #78392C; --r2: #A0492F; --r3: #C8613F; --r4: #E68A6E;
+  --sobre-rampa: #141B19;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--papel); color: var(--tinta);
+  font-family: var(--sans); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 600; text-wrap: balance; margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+.env { max-width: 1320px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 30px); }
+
+/* ---------- cabeçalho ---------- */
+.topo { border-bottom: 1px solid var(--fio); background: var(--carta); }
+.topo-in { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 30px; padding: 20px 0 16px; }
+.marca { flex: 1 1 260px; min-width: 0; }
+.marca h1 { font-size: clamp(22px, 3.1vw, 31px); letter-spacing: -.012em; line-height: 1.12; }
+.marca p { margin: 5px 0 0; font-size: 13.5px; color: var(--tinta-2); max-width: 62ch; }
+.selo {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--tinta-2); border: 1px solid var(--fio-forte); border-radius: 2px;
+  padding: 3px 7px; display: inline-block; margin-bottom: 9px;
+}
+.kpis { display: flex; gap: 26px; flex-wrap: wrap; }
+.kpi-rot {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--tinta-3); display: block; margin-bottom: 1px;
+}
+.kpi-val { font-size: 22px; font-weight: 600; letter-spacing: -.015em; line-height: 1.15; }
+.kpi-sub { font-size: 11.5px; color: var(--tinta-2); }
+.tema {
+  background: none; border: 1px solid var(--fio-forte); border-radius: 2px;
+  padding: 5px 10px; cursor: pointer; font-family: var(--mono); font-size: 11px;
+  letter-spacing: .05em; color: var(--tinta-2); align-self: flex-start;
+}
+.tema:hover { border-color: var(--tinta-2); color: var(--tinta); }
+
+/* ---------- navegação: fita de régua ---------- */
+.regua { background: var(--carta); border-bottom: 1px solid var(--fio); position: sticky; top: 0; z-index: 40; }
+.regua-in { display: flex; gap: 0; overflow-x: auto; scrollbar-width: thin; }
+.aba {
+  background: none; border: 0; cursor: pointer; padding: 13px 17px 9px;
+  font-size: 13.5px; color: var(--tinta-2); white-space: nowrap;
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+}
+.aba span.t { display: block; width: 1px; height: 6px; background: var(--fio-forte); }
+.aba:hover { color: var(--tinta); }
+.aba[aria-selected="true"] { color: var(--tinta); font-weight: 600; }
+.aba[aria-selected="true"] span.t { height: 11px; width: 2px; background: var(--tinta); }
+.aba b { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--tinta-3); }
+
+main { padding: 24px 0 70px; }
+.tela[hidden] { display: none; }
+
+/* ---------- tipografia de seção ---------- */
+.sec { margin: 0 0 12px; }
+.sec-eyebrow {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase;
+  color: var(--tinta-3); display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+}
+.sec-eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--fio); }
+.sec h2 { font-size: 20px; letter-spacing: -.01em; }
+.sec p { margin: 5px 0 0; font-size: 13.5px; color: var(--tinta-2); max-width: 74ch; }
+
+.cartao {
+  background: var(--carta); border: 1px solid var(--fio); border-radius: 3px;
+  padding: 16px 18px;
+}
+
+/* ---------- filtros: uma fileira acima de tudo ---------- */
+.filtros {
+  display: flex; flex-wrap: wrap; gap: 9px 14px; align-items: flex-end;
+  padding: 12px 14px; background: var(--carta); border: 1px solid var(--fio);
+  border-radius: 3px; margin-bottom: 14px;
+}
+.campo { display: flex; flex-direction: column; gap: 3px; }
+.campo label {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--tinta-3);
+}
+.campo select, .campo input {
+  font: inherit; font-size: 13px; padding: 5px 7px; background: var(--carta);
+  color: var(--tinta); border: 1px solid var(--fio-forte); border-radius: 2px; min-width: 130px;
+}
+.chips-f { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip-f {
+  border: 1px solid var(--fio-forte); background: var(--carta); border-radius: 2px;
+  padding: 4px 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 5px;
+  color: var(--tinta-2);
+}
+.chip-f i { width: 8px; height: 8px; border-radius: 1px; display: block; flex: none; }
+.chip-f[aria-pressed="true"] { border-color: var(--tinta); color: var(--tinta); font-weight: 600; background: var(--carta-2); }
+.chip-f b { font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--tinta-3); }
+
+/* ---------- fila + detalhe ---------- */
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.32fr); gap: 16px; align-items: start; }
+@media (max-width: 1080px) { .split { grid-template-columns: 1fr; } }
+
+.lista-topo {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  margin-bottom: 7px; font-size: 12.5px; color: var(--tinta-2);
+}
+.fila { display: flex; flex-direction: column; gap: 7px; }
+.pdv {
+  display: grid; grid-template-columns: 3px 1fr auto; gap: 0 12px; text-align: left;
+  background: var(--carta); border: 1px solid var(--fio); border-radius: 3px;
+  padding: 0; cursor: pointer; overflow: hidden; width: 100%;
+}
+.pdv:hover { border-color: var(--fio-forte); }
+.pdv[aria-current="true"] { border-color: var(--tinta); box-shadow: inset 0 0 0 1px var(--tinta); }
+.pdv .barra { background: var(--fx); }
+.pdv .corpo { padding: 10px 0 11px; min-width: 0; }
+.pdv .nome { font-weight: 600; font-size: 14.5px; letter-spacing: -.005em; }
+.pdv .meta { font-size: 11.5px; color: var(--tinta-2); margin-top: 1px; }
+.pdv .dir { padding: 10px 13px 11px 0; text-align: right; white-space: nowrap; }
+.pdv .perd { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+.pdv .perd-r { font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; color: var(--tinta-3); text-transform: uppercase; }
+.pdv .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+
+/* A cor de status é MARCA, nunca texto. Rótulo de faixa em 10px pintado de
+   --degradando dá 2,75:1 — ilegível. O quadradinho carrega a identidade, a
+   tinta carrega a leitura. (E o rótulo textual está sempre presente: cor
+   sozinha nunca informa nada nesta página.) */
+.faixa-tag {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--tinta); border: 1px solid var(--fio-forte); border-radius: 2px; padding: 1px 5px 1px 4px;
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-weight: 600;
+}
+.faixa-tag::before {
+  content: ""; width: 7px; height: 7px; border-radius: 1px; background: var(--fx); flex: none;
+}
+.chip {
+  font-size: 11px; padding: 2px 6px; border-radius: 2px; white-space: nowrap;
+  background: var(--carta-2); border: 1px solid var(--fio); color: var(--tinta-2);
+  font-family: var(--mono);
+}
+.chip.on { border-color: var(--fio-forte); color: var(--tinta); background: var(--carta); }
+.cnt { display: inline-flex; align-items: center; gap: 5px; justify-content: flex-end; }
+.cnt i { width: 6px; height: 6px; border-radius: 1px; flex: none; background: var(--fx); }
+.cnt.zero i { opacity: .3; }
+
+.mais {
+  margin-top: 9px; width: 100%; background: var(--carta); border: 1px dashed var(--fio-forte);
+  border-radius: 3px; padding: 9px; cursor: pointer; font-size: 13px; color: var(--tinta-2);
+}
+.mais:hover { color: var(--tinta); border-color: var(--tinta-2); }
+
+/* ---------- painel de detalhe ---------- */
+.det { position: sticky; top: 58px; }
+@media (max-width: 1080px) { .det { position: static; } }
+.det-vazio { color: var(--tinta-2); font-size: 13.5px; padding: 30px 4px; text-align: center; }
+.det h3 { font-size: 19px; letter-spacing: -.01em; }
+.det-cab { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+.det-meta { font-size: 12.5px; color: var(--tinta-2); margin-top: 3px; }
+.det-perd { text-align: right; }
+.det-perd .v { font-family: var(--mono); font-size: 21px; font-weight: 600; }
+.det-blk { border-top: 1px solid var(--fio); margin-top: 15px; padding-top: 13px; }
+.det-blk h4 {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--tinta-3); font-weight: 400; margin-bottom: 9px;
+}
+
+/* sinais */
+.sinais { display: grid; gap: 7px; }
+.sinal { display: grid; grid-template-columns: 106px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.sinal .rot { color: var(--tinta-2); font-size: 12.5px; }
+.sinal .cmp { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.sinal .cmp .de { color: var(--tinta-3); }
+.sinal .vd {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase;
+  padding: 1px 6px; border-radius: 2px; border: 1px solid var(--fio); color: var(--tinta-3);
+  white-space: nowrap;
+}
+.sinal.on .vd { border-color: var(--sangrando); color: var(--sangrando); font-weight: 600; }
+.sinal.on .cmp { font-weight: 600; }
+
+/* listas de categoria */
+.cats { display: grid; gap: 3px; }
+.cat { display: grid; grid-template-columns: 1fr auto auto; gap: 9px; align-items: baseline; font-size: 12.5px; padding: 3px 0; border-bottom: 1px solid var(--fio); }
+.cat:last-child { border-bottom: 0; }
+.cat .n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat .v { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 12px; }
+.cat .q { font-family: var(--mono); font-size: 10.5px; color: var(--tinta-3); white-space: nowrap; }
+.cat-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.cat-cab .tit { font-size: 13px; font-weight: 600; }
+.cat-cab .tot { font-family: var(--mono); font-size: 12px; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 720px) { .duas { grid-template-columns: 1fr; } }
+
+/* ranking */
+.rk { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+.rk div { font-size: 12.5px; }
+.rk .rot { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-3); display: block; }
+.rk .v { font-family: var(--mono); font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.pior { color: var(--sangrando); }
+.melhor { color: var(--crescendo); }
+
+/* ---------- tabelas ---------- */
+.tw { overflow-x: auto; border: 1px solid var(--fio); border-radius: 3px; background: var(--carta); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--fio); white-space: nowrap; }
+thead th {
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--tinta-3); font-weight: 400; background: var(--carta-2); position: sticky; top: 0;
+  border-bottom: 1px solid var(--fio-forte);
+}
+thead th.srt { cursor: pointer; }
+thead th.srt:hover { color: var(--tinta); }
+thead th[aria-sort] { color: var(--tinta); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tbody tr:hover { background: var(--carta-2); }
+tbody tr:last-child td { border-bottom: 0; }
+.mini-bar { display: block; height: 5px; border-radius: 0 2px 2px 0; background: var(--sangrando); }
+.mini-cel { min-width: 120px; }
+
+/* ---------- gráficos ---------- */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+.gtit { font-size: 15px; font-weight: 600; font-family: var(--serif); }
+.gsub { font-size: 12.5px; color: var(--tinta-2); margin: 3px 0 12px; max-width: 66ch; }
+svg { display: block; max-width: 100%; overflow: visible; }
+.ax { font-family: var(--mono); font-size: 9.5px; fill: var(--tinta-3); }
+.vlab { font-family: var(--mono); font-size: 10.5px; fill: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.gl { stroke: var(--fio); stroke-width: 1; }
+.bl { stroke: var(--fio-forte); stroke-width: 1; }
+
+/* distribuição por faixa: barras separadas e rotuladas, nunca uma pilha de 8 */
+.dist { display: grid; gap: 5px; }
+.dist-l { display: grid; grid-template-columns: 92px minmax(0,1fr) 54px 74px; gap: 9px; align-items: center; font-size: 12.5px; }
+.dist-l .nm { display: flex; align-items: center; gap: 6px; }
+.dist-l .nm i { width: 8px; height: 8px; border-radius: 1px; flex: none; background: var(--fx); }
+.dist-l .tr { background: var(--carta-2); height: 13px; border-radius: 0 2px 2px 0; }
+.dist-l .fl { height: 13px; background: var(--fx); border-radius: 0 2px 2px 0; }
+.dist-l .n, .dist-l .r { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; font-size: 12px; }
+@media (max-width: 560px) { .dist-l { grid-template-columns: 84px minmax(0,1fr) 46px; } .dist-l .r { display: none; } }
+
+/* heatmap. Rola dentro do próprio contêiner em tela estreita: célula de 35px
+   não cabe "12,9%" e a alternativa seria diminuir a fonte até ninguém ler. */
+.hm-w { overflow-x: auto; }
+.hm { display: grid; gap: 3px; font-size: 12px; min-width: 520px; }
+.hm-r { display: grid; grid-template-columns: 116px repeat(5, minmax(0, 1fr)); gap: 3px; align-items: stretch; }
+.hm-c {
+  padding: 9px 4px; text-align: center; border-radius: 2px; font-family: var(--mono);
+  font-variant-numeric: tabular-nums; font-weight: 600; position: relative;
+}
+.hm-c small { display: block; font-weight: 400; font-size: 9.5px; opacity: .8; }
+.hm-h { font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-3); text-align: center; padding-bottom: 2px; }
+.hm-l { font-size: 12px; color: var(--tinta-2); display: flex; align-items: center; }
+.hm-x { background: repeating-linear-gradient(45deg, transparent, transparent 4px, var(--fio) 4px, var(--fio) 5px); color: var(--tinta-3); font-weight: 400; }
+
+.legenda { display: flex; align-items: center; gap: 8px; margin-top: 11px; font-size: 11.5px; color: var(--tinta-2); flex-wrap: wrap; }
+.legenda .esc { display: flex; gap: 2px; }
+.legenda .esc i { width: 22px; height: 9px; display: block; }
+
+/* nota explicativa ("como se calcula") */
+.nota {
+  border-left: 2px solid var(--fio-forte); padding: 2px 0 2px 12px; margin-top: 13px;
+  font-size: 12.5px; color: var(--tinta-2); max-width: 70ch;
+}
+.nota b { color: var(--tinta); font-weight: 600; }
+.nota code { font-family: var(--mono); font-size: 11.5px; background: var(--carta-2); padding: 1px 4px; border-radius: 2px; }
+
+/* ---------- metodologia (voz de prosa) ---------- */
+.prosa { max-width: 74ch; }
+.prosa h3 { font-size: 18px; margin: 26px 0 7px; letter-spacing: -.008em; }
+.prosa h3:first-child { margin-top: 0; }
+.prosa p { margin: 0 0 11px; font-family: var(--serif); font-size: 15.5px; line-height: 1.62; }
+.prosa ul { margin: 0 0 12px; padding-left: 19px; font-family: var(--serif); font-size: 15.5px; line-height: 1.6; }
+.prosa li { margin-bottom: 5px; }
+.prosa code { font-family: var(--mono); font-size: 12.5px; background: var(--carta-2); padding: 1px 4px; border-radius: 2px; }
+.prosa .dest { font-family: var(--sans); font-size: 13px; color: var(--tinta-2); border-left: 2px solid var(--fio-forte); padding-left: 12px; margin: 0 0 13px; }
+
+/* escala com marca de limiar — o motivo visual da peça */
+.escala { margin: 4px 0 16px; }
+.escala .lin { position: relative; height: 30px; }
+.escala .base { position: absolute; left: 0; right: 0; top: 13px; height: 1px; background: var(--fio-forte); }
+.escala .tick { position: absolute; top: 9px; width: 1px; height: 5px; background: var(--fio-forte); }
+.escala .lim { position: absolute; top: 4px; width: 2px; height: 15px; background: var(--sangrando); }
+.escala .lim-l {
+  position: absolute; top: 20px; transform: translateX(-50%); font-family: var(--mono);
+  font-size: 10px; color: var(--sangrando); white-space: nowrap;
+}
+.escala .zona { position: absolute; top: 11px; height: 5px; background: var(--r1); opacity: .55; }
+.escala .ends { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--tinta-3); }
+
+/* ---------- tooltip ---------- */
+#tip {
+  position: fixed; z-index: 90; pointer-events: none; opacity: 0;
+  background: var(--carta); color: var(--tinta); border: 1px solid var(--fio-forte);
+  border-radius: 3px; padding: 6px 9px; font-size: 12px; box-shadow: 0 3px 12px var(--sombra);
+  max-width: 260px; font-family: var(--mono); line-height: 1.45;
+}
+#tip.on { opacity: 1; }
+#tip b { font-family: var(--sans); }
+
+.rodape { border-top: 1px solid var(--fio); margin-top: 34px; padding-top: 16px; font-size: 12px; color: var(--tinta-3); }
+.rodape p { margin: 0 0 5px; max-width: 84ch; }
+.tag-sint {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  border: 1px solid var(--degradando); color: var(--degradando); padding: 2px 6px; border-radius: 2px;
+}
+</style>
+
+<header class="topo">
+  <div class="env topo-in">
+    <div class="marca">
+      <span class="selo">Base sintética · mês de referência <b id="mesref"></b></span>
+      <h1>Termômetro da Carteira</h1>
+      <p>Detecção de queda e churn numa carteira B2B de distribuição alimentar. Três sinais contra o
+         mesmo período do ano anterior, calibrados por backtest na própria base.</p>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <button class="tema" id="tema" type="button">tema</button>
+  </div>
+</header>
+
+<nav class="regua"><div class="env regua-in" id="abas" role="tablist"></div></nav>
+
+<main class="env">
+  <!-- ================= FILA DE RISCO ================= -->
+  <section class="tela" id="tela-fila" role="tabpanel">
+    <div class="filtros">
+      <div class="campo" style="flex:1 1 100%">
+        <label>Faixa</label>
+        <div class="chips-f" id="f-faixa"></div>
+      </div>
+      <div class="campo"><label for="f-tip">Tipologia</label><select id="f-tip"></select></div>
+      <div class="campo"><label for="f-sup">Supervisor</label><select id="f-sup"></select></div>
+      <div class="campo"><label for="f-vend">Vendedor</label><select id="f-vend"></select></div>
+      <div class="campo"><label for="f-porte">Porte</label><select id="f-porte"></select></div>
+      <div class="campo"><label for="f-ord">Ordenar por</label><select id="f-ord"></select></div>
+      <div class="campo" style="flex:1 1 170px"><label for="f-busca">Buscar PDV ou cidade</label>
+        <input id="f-busca" type="search" placeholder="ex.: Atacado Figueira" autocomplete="off"></div>
+    </div>
+    <div class="split">
+      <div>
+        <div class="lista-topo"><span id="fila-cont"></span><span id="fila-soma"></span></div>
+        <div class="fila" id="fila"></div>
+        <button class="mais" id="mais" type="button" hidden></button>
+      </div>
+      <div class="cartao det" id="det"><div class="det-vazio">Selecione um PDV da fila para ver os sinais, a série mensal e as categorias.</div></div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPE ================= -->
+  <section class="tela" id="tela-equipe" role="tabpanel" hidden>
+    <div class="sec">
+      <div class="sec-eyebrow">Equipe</div>
+      <h2>R$ perdido por vendedor</h2>
+      <p>Uma linha por vendedor. <b>R$ perdido</b> é a soma, na carteira dele, da queda de receita
+         dos últimos 12 meses contra os 12 anteriores. Clique num nome para filtrar a fila de risco.</p>
+    </div>
+    <div class="tw" id="tw-equipe"></div>
+    <div class="nota" id="nota-equipe"></div>
+  </section>
+
+  <!-- ================= PERDIDOS ================= -->
+  <section class="tela" id="tela-perdidos" role="tabpanel" hidden>
+    <div class="sec">
+      <div class="sec-eyebrow">Reativação</div>
+      <h2>Quem parou de comprar</h2>
+      <p>Agrupado por há quanto tempo parou. O valor mostrado é o que o PDV
+         gerava nos 12 meses <em>antes</em> de parar — e não a receita dos últimos 12 meses, que num
+         PDV parado há oito meses já está truncada e faz o cliente parecer menor do que era.</p>
+    </div>
+    <div class="grid3" id="perdidos-kpi"></div>
+    <div id="perdidos-grupos"></div>
+  </section>
+
+  <!-- ================= VISÃO GERAL ================= -->
+  <section class="tela" id="tela-geral" role="tabpanel" hidden>
+    <div class="sec">
+      <div class="sec-eyebrow">Visão geral</div>
+      <h2>Como a carteira está distribuída</h2>
+    </div>
+    <div class="grid2">
+      <div class="cartao">
+        <div class="gtit">Carteira ativa por faixa</div>
+        <div class="gsub" id="dist-sub"></div>
+        <div class="dist" id="dist"></div>
+        <div class="nota">Só PDVs com alguma compra nos últimos 12 meses. Quem está parado há 12+ meses
+          tem tela própria — jogados aqui, seriam mais de mil e virariam a maior barra do gráfico,
+          afogando as faixas em que ainda se pode agir.</div>
+      </div>
+      <div class="cartao">
+        <div class="gtit">Escada de calibração</div>
+        <div class="gsub">Chance de desfecho ruim nos 12 meses seguintes, por quantidade de sinais
+          disparados no corte. Medida por backtest nesta base.</div>
+        <div id="escada"></div>
+        <div class="nota" id="escada-nota"></div>
+      </div>
+    </div>
+    <div class="cartao" style="margin-top:16px">
+      <div class="gtit">Risco por ritmo de compra × atraso</div>
+      <div class="gsub">O mesmo atraso significa coisas muito diferentes dependendo do ritmo do
+        cliente. É por isso que a régua de atraso não pode ser um número só para toda a carteira.</div>
+      <div class="hm-w"><div class="hm" id="heat"></div></div>
+      <div class="legenda" id="heat-leg"></div>
+      <div class="nota" id="heat-nota"></div>
+    </div>
+  </section>
+
+  <!-- ================= METODOLOGIA ================= -->
+  <section class="tela" id="tela-metodo" role="tabpanel" hidden>
+    <div class="sec">
+      <div class="sec-eyebrow">Metodologia</div>
+      <h2>Como cada régua é calculada, e por quê</h2>
+    </div>
+    <div class="prosa" id="prosa"></div>
+  </section>
+
+  <div class="rodape">
+    <p><span class="tag-sint">dados sintéticos</span> &nbsp;Nenhum número desta página vem de cliente
+      real. A base é gerada por um script (<code>gerador_base.py</code>) que produz
+      <b id="rp-linhas"></b> linhas de venda mensal e planta de propósito os casos que a metodologia
+      deve encontrar; a análise (<code>termometro.py</code>) roda em cima dela. Semente
+      <code id="rp-seed"></code> — mesma semente, mesma base.</p>
+  </div>
+</main>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="dados">__PAYLOAD__</script>
+<script>
+"use strict";
+const D = JSON.parse(document.getElementById("dados").textContent);
+const M = D.meta, R = D.reguas;
+
+/* ---------------- formatação ---------------- */
+const nf = new Intl.NumberFormat("pt-BR");
+const nf1 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function rs(v) {
+  const a = Math.abs(v);
+  if (a >= 1e6) return "R$ " + nf1.format(v / 1e6) + " mi";
+  if (a >= 1e3) return "R$ " + nf.format(Math.round(v / 1e3)) + " mil";
+  return "R$ " + nf.format(Math.round(v));
+}
+const rsFull = v => "R$ " + nf.format(Math.round(v));
+const pc = (v, d = 0) => (v > 0 ? "+" : "") + (d ? nf1.format(v * 100) : nf.format(Math.round(v * 100))) + "%";
+const pc1 = v => nf1.format(v * 100) + "%";
+const MESN = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+function mesCurto(s) { const [a, m] = s.split("-"); return MESN[+m - 1] + "/" + a.slice(2); }
+
+const FAIXA = {
+  parou:     { rot: "Parou",      cor: "var(--parou)" },
+  sangrando: { rot: "Sangrando",  cor: "var(--sangrando)" },
+  degradando:{ rot: "Degradando", cor: "var(--degradando)" },
+  observar:  { rot: "Observar",   cor: "var(--observar)" },
+  estavel:   { rot: "Estável",    cor: "var(--estavel)" },
+  crescendo: { rot: "Crescendo",  cor: "var(--crescendo)" },
+  voltou:    { rot: "Voltou",     cor: "var(--voltou)" },
+  novo:      { rot: "Novo",       cor: "var(--novo)" }
+};
+const ORDEM_FAIXA = ["parou","sangrando","degradando","observar","estavel","crescendo","voltou","novo"];
+const PORTE = { top1: "Top 1%", top5: "Top 5%", top10: "Top 10%", top25: "Top 25%", top50: "Top 50%", cauda: "Metade inferior" };
+const PORTE_ORD = ["top1","top5","top10","top25","top50","cauda"];
+const RITMO = { todo_mes: "Todo mês", quase_todo_mes: "Quase todo mês", ciclico: "Cíclico", esporadico: "Esporádico" };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------------- tooltip ---------------- */
+const tip = document.getElementById("tip");
+function mostraTip(e, html) {
+  tip.innerHTML = html; tip.classList.add("on");
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 13, y = e.clientY - r.height - 9;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 13;
+  if (y < 8) y = e.clientY + 15;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const escondeTip = () => tip.classList.remove("on");
+function ligaTip(el, html) {
+  el.addEventListener("mousemove", e => mostraTip(e, html));
+  el.addEventListener("mouseleave", escondeTip);
+  el.addEventListener("focus", e => {
+    const b = el.getBoundingClientRect();
+    mostraTip({ clientX: b.left + b.width / 2, clientY: b.top }, html);
+  });
+  el.addEventListener("blur", escondeTip);
+}
+
+/* ---------------- cabeçalho ---------------- */
+document.getElementById("mesref").textContent = mesCurto(M.mes_referencia);
+document.getElementById("rp-linhas").textContent = nf.format(M.linhas_fato);
+document.getElementById("rp-seed").textContent = M.seed;
+
+const perdidosTodos = D.pdvs.filter(p => p.atraso !== null && p.atraso >= R.meses_para_parou);
+const filaBase = D.pdvs.filter(p => p.rec12 > 0 && p.faixa !== "estavel" && p.faixa !== "crescendo" && p.faixa !== "novo");
+
+document.getElementById("kpis").innerHTML = [
+  ["Receita 12 meses", rs(M.receita_12m), pc(M.var_receita, 1) + " vs 12m anteriores"],
+  ["R$ perdido", rs(M.perdido_total), "queda de receita 12m × 12m"],
+  ["Na fila de risco", nf.format(filaBase.length), "de " + nf.format(M.pdvs_ativos_12m) + " PDVs ativos"],
+  ["Sangramento silencioso", nf.format(D.destaques.silenciosos.n), rs(D.destaques.silenciosos.perdido) + " · compram todo mês"]
+].map(([r, v, s]) => `<div><span class="kpi-rot">${r}</span><span class="kpi-val">${v}</span>
+  <span class="kpi-sub">${esc(s)}</span></div>`).join("");
+
+/* ---------------- tema ---------------- */
+const btTema = document.getElementById("tema");
+function pintaTema() {
+  const t = document.documentElement.getAttribute("data-theme");
+  btTema.textContent = t === "dark" ? "◐ claro" : t === "light" ? "◑ escuro" : "◐ tema";
+}
+btTema.addEventListener("click", () => {
+  const atual = document.documentElement.getAttribute("data-theme");
+  const escuroAgora = atual ? atual === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.setAttribute("data-theme", escuroAgora ? "light" : "dark");
+  pintaTema(); redesenha();
+});
+pintaTema();
+
+/* ---------------- abas ---------------- */
+const ABAS = [
+  ["fila", "Fila de risco", filaBase.length],
+  ["equipe", "Equipe", D.equipe.length],
+  ["perdidos", "Perdidos", perdidosTodos.length],
+  ["geral", "Visão geral", null],
+  ["metodo", "Metodologia", null]
+];
+const elAbas = document.getElementById("abas");
+elAbas.innerHTML = ABAS.map(([id, rot, n], i) =>
+  `<button class="aba" role="tab" id="aba-${id}" aria-controls="tela-${id}"
+     aria-selected="${i === 0}"><span class="t"></span><span>${rot}${n !== null ? ` <b>${nf.format(n)}</b>` : ""}</span></button>`
+).join("");
+function abre(id) {
+  ABAS.forEach(([x]) => {
+    document.getElementById("aba-" + x).setAttribute("aria-selected", String(x === id));
+    document.getElementById("tela-" + x).hidden = x !== id;
+  });
+  if (id === "geral") desenhaGeral();
+  scrollTo({ top: 0, behavior: "instant" });
+}
+ABAS.forEach(([id]) => document.getElementById("aba-" + id).addEventListener("click", () => abre(id)));
+
+/* =========================================================================
+   FILA DE RISCO
+   ========================================================================= */
+const est = { faixas: new Set(["parou","sangrando","degradando","observar","voltou"]),
+              tip: "", sup: "", vend: "", porte: "", ord: "perdido", busca: "", sel: null, lim: 40 };
+
+const contaFaixa = {};
+ORDEM_FAIXA.forEach(f => contaFaixa[f] = filaBase.filter(p => p.faixa === f).length);
+document.getElementById("f-faixa").innerHTML = ORDEM_FAIXA.filter(f => contaFaixa[f] > 0)
+  .map(f => `<button class="chip-f" type="button" data-f="${f}" aria-pressed="${est.faixas.has(f)}"
+      style="--fx:${FAIXA[f].cor}"><i style="background:${FAIXA[f].cor}"></i>${FAIXA[f].rot}
+      <b>${nf.format(contaFaixa[f])}</b></button>`).join("");
+document.querySelectorAll("#f-faixa .chip-f").forEach(b => b.addEventListener("click", () => {
+  const f = b.dataset.f;
+  est.faixas.has(f) ? est.faixas.delete(f) : est.faixas.add(f);
+  b.setAttribute("aria-pressed", String(est.faixas.has(f)));
+  est.lim = 40; pintaFila();
+}));
+
+function enche(sel, itens, rotTodos) {
+  sel.innerHTML = `<option value="">${rotTodos}</option>` +
+    itens.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+}
+enche(document.getElementById("f-tip"), D.tipologias, "Todas");
+enche(document.getElementById("f-sup"), D.supervisores, "Todos");
+enche(document.getElementById("f-vend"), D.equipe.map(e => e.vend).sort(), "Todos");
+document.getElementById("f-porte").innerHTML = `<option value="">Todos</option>` +
+  PORTE_ORD.map(p => `<option value="${p}">${PORTE[p]}</option>`).join("");
+const ORDENS = [["perdido","R$ perdido"],["queda","% de queda"],["porte","Porte"],
+                ["ranking","Queda no ranking"],["parado","Tempo parado"]];
+document.getElementById("f-ord").innerHTML = ORDENS.map(([v, r]) => `<option value="${v}">${r}</option>`).join("");
+
+[["f-tip","tip"],["f-sup","sup"],["f-vend","vend"],["f-porte","porte"],["f-ord","ord"]].forEach(([id, k]) =>
+  document.getElementById(id).addEventListener("change", e => { est[k] = e.target.value; est.lim = 40; pintaFila(); }));
+document.getElementById("f-busca").addEventListener("input", e => {
+  est.busca = e.target.value.trim().toLowerCase(); est.lim = 40; pintaFila();
+});
+
+function filtra() {
+  let l = filaBase.filter(p =>
+    est.faixas.has(p.faixa) &&
+    (!est.tip || p.tip === est.tip) &&
+    (!est.sup || p.sup === est.sup) &&
+    (!est.vend || p.vend === est.vend) &&
+    (!est.porte || p.porte === est.porte) &&
+    (!est.busca || p.pdv.toLowerCase().includes(est.busca) || p.cidade.toLowerCase().includes(est.busca)));
+  const cmp = {
+    perdido: (a, b) => b.perdido - a.perdido,
+    queda: (a, b) => (a.var_rec ?? 9) - (b.var_rec ?? 9),
+    porte: (a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9),
+    ranking: (a, b) => ((b.rank ?? 0) - (b.rank_ant ?? 0)) - ((a.rank ?? 0) - (a.rank_ant ?? 0)),
+    parado: (a, b) => (b.atraso ?? -1) - (a.atraso ?? -1)
+  }[est.ord];
+  return l.sort(cmp);
+}
+
+function chipsMotivo(p) {
+  const c = [];
+  // Em "Voltou" os sinais são todos verdadeiros e todos enganosos: eles medem um
+  // semestre em que o cliente estava ausente. Mostrar "Frequência 6→0" num PDV
+  // que voltou a comprar mês passado é reintroduzir a confusão que a faixa existe
+  // para evitar — o vendedor lê queda e cobra queda. Aqui só o fato do retorno.
+  if (p.faixa === "voltou") {
+    c.push(["Voltou em " + mesCurto(p.ult_mes), 1]);
+    if (p.freq_atual === 0) c.push(["ausente no semestre", 0]);
+    return c.map(([t, on]) => `<span class="chip${on ? " on" : ""}">${esc(t)}</span>`).join("");
+  }
+  if (p.sinais[0]) c.push(["Receita " + pc(p.var_rec), 1]);
+  if (p.sinais[1]) c.push(["Frequência " + p.freq_ant + "→" + p.freq_atual + " meses", 1]);
+  if (p.sinais[2]) c.push(["Mix " + p.mix_ant + "→" + p.mix_atual + " cat.", 1]);
+  if (p.atraso >= R.meses_para_parou) c.push([p.atraso + " meses parado", 1]);
+  if (!c.length && p.var_rec !== null) c.push(["Receita " + pc(p.var_rec), 0]);
+  return c.map(([t, on]) => `<span class="chip${on ? " on" : ""}">${esc(t)}</span>`).join("");
+}
+
+function pintaFila() {
+  const l = filtra(), mostra = l.slice(0, est.lim);
+  document.getElementById("fila-cont").innerHTML =
+    `<b>${nf.format(l.length)}</b> PDV${l.length === 1 ? "" : "s"} na fila`;
+  document.getElementById("fila-soma").innerHTML =
+    `${rs(l.reduce((s, p) => s + p.perdido, 0))} perdidos`;
+  document.getElementById("fila").innerHTML = mostra.map(p => `
+    <button class="pdv" type="button" data-id="${p.id}" style="--fx:${FAIXA[p.faixa].cor}"
+      aria-current="${est.sel === p.id}">
+      <span class="barra"></span>
+      <span class="corpo">
+        <span class="nome">${esc(p.pdv)}</span>
+        <span class="meta">${esc(p.cidade)} · ${esc(p.tip)} · ${PORTE[p.porte]} · ${esc(p.vend)}</span>
+        <span class="chips"><span class="faixa-tag">${FAIXA[p.faixa].rot}</span>${chipsMotivo(p)}</span>
+      </span>
+      <span class="dir"><span class="perd">${rs(p.perdido)}</span><br>
+        <span class="perd-r">perdido</span></span>
+    </button>`).join("");
+  document.querySelectorAll("#fila .pdv").forEach(b =>
+    b.addEventListener("click", () => {
+      est.sel = +b.dataset.id; pintaFila(); pintaDet();
+      // empilhado, o detalhe nasce abaixo de uma lista longa e ninguém o vê
+      if (matchMedia("(max-width: 1080px)").matches)
+        document.getElementById("det").scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+  const bt = document.getElementById("mais");
+  bt.hidden = l.length <= est.lim;
+  bt.textContent = `mostrar mais ${Math.min(60, l.length - est.lim)} (de ${nf.format(l.length - est.lim)} restantes)`;
+}
+document.getElementById("mais").addEventListener("click", () => { est.lim += 60; pintaFila(); });
+
+/* ---------------- série mensal ---------------- */
+function serieSVG(p) {
+  const s = p.serie, n = s.length, W = 640, H = 132, pl = 6, pb = 22, pt = 16;
+  const bw = (W - pl * 2) / n, max = Math.max(...s, 1);
+  const y = v => pt + (H - pt - pb) * (1 - v / max);
+  const meses = M.serie_meses;
+  // janelas comparadas: os 6 meses de jan-jun deste ano e os mesmos do ano anterior
+  const iAtual = meses.indexOf(M.janelas.sem_atual[0]), iAnt = meses.indexOf(M.janelas.sem_ant[0]);
+  let g = "";
+  [[iAnt, "ant"], [iAtual, "atual"]].forEach(([i0, cl]) => {
+    if (i0 < 0) return;
+    g += `<rect x="${pl + i0 * bw}" y="${pt - 9}" width="${bw * 6}" height="${H - pt - pb + 9}"
+      fill="var(--carta-2)"></rect>`;
+    g += `<text class="ax" x="${pl + i0 * bw + bw * 3}" y="${pt - 12}" text-anchor="middle"
+      >${cl === "atual" ? "jan–jun deste ano" : "mesmo período, ano anterior"}</text>`;
+  });
+  g += `<line class="bl" x1="${pl}" y1="${H - pb}" x2="${W - pl}" y2="${H - pb}"></line>`;
+  const iMax = s.indexOf(max);
+  s.forEach((v, i) => {
+    const x = pl + i * bw + 1;
+    const w = Math.max(1, bw - 2);            // 2px de respiro entre barras
+    if (v > 0) {
+      const h = Math.max(1.5, H - pb - y(v));
+      g += `<rect class="hb" data-i="${i}" x="${x}" y="${H - pb - h}" width="${w}" height="${h}"
+        rx="1.5" fill="var(--fx)"></rect>`;
+    } else {
+      // mês sem compra: traço vermelho na linha de base, não uma barra de altura zero
+      g += `<rect class="hb" data-i="${i}" x="${x}" y="${H - pb - 2}" width="${w}" height="2.5"
+        fill="var(--sangrando)"></rect>`;
+    }
+    if (i % 3 === 0 || i === n - 1)
+      g += `<text class="ax" x="${x + w / 2}" y="${H - pb + 12}" text-anchor="middle">${mesCurto(meses[i])}</text>`;
+  });
+  g += `<text class="vlab" x="${pl + iMax * bw + bw / 2}" y="${y(max) - 4}" text-anchor="middle">${rs(max)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="--fx:${FAIXA[p.faixa].cor};width:100%;height:auto"
+    role="img" aria-label="Receita mensal dos últimos ${n} meses">${g}</svg>`;
+}
+
+function linhaSinal(rot, cmp, disparou, veredito) {
+  return `<div class="sinal ${disparou ? "on" : ""}"><span class="rot">${rot}</span>
+    <span class="cmp">${cmp}</span><span class="vd">${veredito}</span></div>`;
+}
+
+function pintaDet() {
+  const p = D.pdvs.find(x => x.id === est.sel);
+  const el = document.getElementById("det");
+  if (!p) { el.innerHTML = `<div class="det-vazio">Selecione um PDV da fila.</div>`; return; }
+  const dr = (p.rank !== null && p.rank_ant !== null) ? p.rank - p.rank_ant : null;
+  const drt = (p.rank_tip !== null && p.rank_tip_ant !== null) ? p.rank_tip - p.rank_tip_ant : null;
+
+  const sinais = [
+    linhaSinal("Receita", `${rs(p.sem_ant)} <span class="de">→</span> ${rs(p.sem_atual)}` +
+      (p.var_rec === null ? "" : `  <b>${pc(p.var_rec)}</b>`), p.sinais[0],
+      p.var_rec === null ? "sem base" : p.sinais[0] ? "disparou" : "ok"),
+    linhaSinal("Frequência", `${p.freq_ant} <span class="de">→</span> ${p.freq_atual} meses com compra`,
+      p.sinais[1], p.sinais[1] ? `${p.freq_atual - p.freq_ant} meses` : "ok"),
+    linhaSinal("Mix (2º tri)", `${p.mix_ant} <span class="de">→</span> ${p.mix_atual} categorias` +
+      (p.var_mix === null ? "" : `  <b>${pc(p.var_mix)}</b>`), p.sinais[2],
+      p.var_mix === null ? "sem base" : p.sinais[2] ? "disparou" : "ok"),
+    linhaSinal("Sem comprar", p.atraso === null ? "—" :
+      `${p.atraso} ${p.atraso === 1 ? "mês" : "meses"} <span class="de">·</span> última compra ${mesCurto(p.ult_mes)}`,
+      p.atraso >= R.meses_para_parou, p.atraso >= R.meses_para_parou ? "parou" : "ok")
+  ].join("");
+
+  const listaParadas = p.paradas.length ? p.paradas.map(([n, v, u, q]) =>
+    `<div class="cat"><span class="n" title="${esc(n)}">${esc(n)}</span>
+      <span class="v">${rs(v)}</span><span class="q">últ. ${mesCurto(u)} · ${q}/12</span></div>`).join("")
+    : `<div class="cat" style="color:var(--tinta-3)"><span class="n">nenhuma categoria abandonada pela régua de 12 meses</span></div>`;
+  const listaAtivas = p.ativas.length ? p.ativas.map(([n, v, q]) =>
+    `<div class="cat"><span class="n" title="${esc(n)}">${esc(n)}</span>
+      <span class="v">${rs(v)}</span><span class="q">${q}/6 meses</span></div>`).join("")
+    : `<div class="cat" style="color:var(--tinta-3)"><span class="n">nenhuma compra nos últimos 6 meses</span></div>`;
+
+  el.innerHTML = `
+    <div class="det-cab">
+      <div style="min-width:0">
+        <span class="faixa-tag" style="--fx:${FAIXA[p.faixa].cor}">${FAIXA[p.faixa].rot}</span>
+        <h3 style="margin-top:6px">${esc(p.pdv)}</h3>
+        <div class="det-meta">${esc(p.cidade)} · ${esc(p.tip)} · ${PORTE[p.porte]} ·
+          compra ${RITMO[p.ritmo].toLowerCase()}</div>
+        <div class="det-meta">${esc(p.vend)} · supervisão ${esc(p.sup)}</div>
+      </div>
+      <div class="det-perd"><span class="kpi-rot">R$ perdido</span>
+        <span class="v">${rs(p.perdido)}</span>
+        <div class="det-meta">${rs(p.rec_ant12)} → ${rs(p.rec12)}</div></div>
+    </div>
+
+    <div class="det-blk"><h4>Os quatro sinais</h4><div class="sinais">${sinais}</div>
+      ${p.faixa === "voltou" ? `<div class="nota">Este PDV está em <b>Voltou</b>: retornou em
+        ${mesCurto(p.ult_mes)} depois de ficar sumido. Os sinais acima são verdadeiros, mas medem um
+        semestre em que ele estava ausente — não é isso que classifica o cliente, e não é isso que se
+        cobra dele. A faixa Voltou tem precedência sobre Sangrando exatamente por isso.</div>` : ""}
+      ${p.faixa === "parou" ? `<div class="nota">Parou há <b>${p.atraso} meses</b>. A faixa Parou
+        precede os sinais: não se discute tendência de quem não está comprando. A fila de reativação
+        está na aba <b>Perdidos</b>.</div>` : ""}
+    </div>
+
+    <div class="det-blk"><h4>Receita mensal · ${M.serie_meses.length} meses</h4>
+      ${serieSVG(p)}
+      <div class="legenda"><span style="display:flex;align-items:center;gap:5px">
+        <i style="width:12px;height:2.5px;background:var(--sangrando);display:block"></i> mês sem compra</span>
+        <span style="display:flex;align-items:center;gap:5px">
+        <i style="width:12px;height:9px;background:var(--carta-2);border:1px solid var(--fio);display:block"></i>
+        janelas comparadas</span></div>
+    </div>
+
+    <div class="det-blk"><h4>Categorias · régua de 12 meses</h4>
+      <div class="duas">
+        <div>
+          <div class="cat-cab"><span class="tit">Parou de comprar</span>
+            <span class="tot">${rs(p.vl_paradas)}</span></div>
+          <div class="cats">${listaParadas}</div>
+          ${p.n_paradas > p.paradas.length ? `<div class="q" style="font-family:var(--mono);font-size:10.5px;color:var(--tinta-3);margin-top:5px">+ ${p.n_paradas - p.paradas.length} categorias menores</div>` : ""}
+        </div>
+        <div>
+          <div class="cat-cab"><span class="tit">Continua comprando</span>
+            <span class="tot">${nf.format(p.n_ativas)} cat.</span></div>
+          <div class="cats">${listaAtivas}</div>
+          ${p.n_ativas > p.ativas.length ? `<div class="q" style="font-family:var(--mono);font-size:10.5px;color:var(--tinta-3);margin-top:5px">+ ${p.n_ativas - p.ativas.length} categorias menores</div>` : ""}
+        </div>
+      </div>
+      <div class="nota">Abandono exige <b>${R.min_meses_abandono}+ meses distintos</b> de compra nos 12
+        meses anteriores e <b>zero</b> nos últimos ${R.janela_recente}. O valor é o que a categoria
+        gerou naqueles 12 meses, sem anualizar.</div>
+    </div>
+
+    <div class="det-blk"><h4>Ranking por receita de 12 meses</h4>
+      <div class="rk">
+        <div><span class="rot">Geral</span><span class="v">${p.rank === null ? "—" : "nº " + nf.format(p.rank)}</span></div>
+        <div><span class="rot">Era</span><span class="v">${p.rank_ant === null ? "—" : "nº " + nf.format(p.rank_ant)}</span></div>
+        <div><span class="rot">Variação</span><span class="v ${dr === null ? "" : dr > 0 ? "pior" : "melhor"}">${
+          dr === null ? "—" : (dr > 0 ? "−" : "+") + nf.format(Math.abs(dr)) + " pos."}</span></div>
+        <div><span class="rot">Em ${esc(p.tip)}</span><span class="v">${p.rank_tip === null ? "—" : "nº " + nf.format(p.rank_tip) + " / " + nf.format(p.n_tip)}</span></div>
+        <div><span class="rot">Era na tipologia</span><span class="v ${drt === null ? "" : drt > 0 ? "pior" : "melhor"}">${
+          p.rank_tip_ant === null ? "—" : "nº " + nf.format(p.rank_tip_ant)}</span></div>
+      </div>
+    </div>`;
+
+  el.querySelectorAll(".hb").forEach(b => {
+    const i = +b.dataset.i, v = p.serie[i];
+    ligaTip(b, `<b>${mesCurto(M.serie_meses[i])}</b><br>${v > 0 ? rsFull(v) : "sem compra"}`);
+  });
+}
+
+/* =========================================================================
+   EQUIPE
+   ========================================================================= */
+let ordEquipe = { k: "perdido", dir: -1 };
+function pintaEquipe() {
+  const maxP = Math.max(...D.equipe.map(e => e.perdido), 1);
+  const cols = [["vend","Vendedor",0],["sup","Supervisor",0],["carteira","Carteira",1],
+    ["ativos","Ativos",1],["parou","Parou",1],["sangrando","Sangrando",1],["degradando","Degradando",1],
+    ["observar","Observar",1],["voltou","Voltou",1],["perdido","R$ perdido",1],["semestre","Receita jan–jun",1]];
+  const val = (e, k) => ["parou","sangrando","degradando","observar","voltou"].includes(k)
+    ? (e.faixas[k] || 0) : e[k];
+  const linhas = [...D.equipe].sort((a, b) => {
+    const x = val(a, ordEquipe.k), y = val(b, ordEquipe.k);
+    return typeof x === "string" ? ordEquipe.dir * x.localeCompare(y, "pt-BR") : ordEquipe.dir * (x - y);
+  });
+  document.getElementById("tw-equipe").innerHTML = `<table>
+    <thead><tr>${cols.map(([k, r, n]) =>
+      `<th class="srt ${n ? "num" : ""}" data-k="${k}"${ordEquipe.k === k ? ` aria-sort="${ordEquipe.dir < 0 ? "descending" : "ascending"}"` : ""}>${r}</th>`).join("")}</tr></thead>
+    <tbody>${linhas.map(e => `<tr>
+      <td><button type="button" class="lnk-vend" data-v="${esc(e.vend)}"
+        style="background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--fio-forte);text-underline-offset:2px">${esc(e.vend)}</button></td>
+      <td style="color:var(--tinta-2)">${esc(e.sup)}</td>
+      <td class="num">${nf.format(e.carteira)}</td>
+      <td class="num">${nf.format(e.ativos)}</td>
+      ${["parou","sangrando","degradando","observar","voltou"].map(f =>
+        `<td class="num"><span class="cnt${(e.faixas[f] || 0) ? "" : " zero"}"
+          style="--fx:${FAIXA[f].cor}"><i></i>${nf.format(e.faixas[f] || 0)}</span></td>`).join("")}
+      <td class="num mini-cel"><span>${rs(e.perdido)}</span>
+        <span class="mini-bar" style="width:${Math.max(2, 100 * e.perdido / maxP)}%"></span></td>
+      <td class="num">${rs(e.semestre)}</td></tr>`).join("")}</tbody></table>`;
+
+  document.querySelectorAll("#tw-equipe th.srt").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.k;
+    ordEquipe = { k, dir: ordEquipe.k === k ? -ordEquipe.dir : (k === "vend" || k === "sup" ? 1 : -1) };
+    pintaEquipe();
+  }));
+  document.querySelectorAll(".lnk-vend").forEach(b => b.addEventListener("click", () => {
+    est.vend = b.dataset.v; document.getElementById("f-vend").value = b.dataset.v;
+    est.lim = 40; pintaFila(); abre("fila");
+  }));
+
+  const pior = D.equipe[0];
+  document.getElementById("nota-equipe").innerHTML =
+    `A coluna <b>Carteira</b> conta PDVs cadastrados; <b>Ativos</b>, os que compraram algo nos últimos
+     12 meses. A diferença entre as duas é carteira dormente, e ela não é distribuída por igual:
+     <b>${esc(pior.vend)}</b> concentra ${rs(pior.perdido)} de queda em
+     ${nf.format(pior.carteira)} PDVs. Ordenar por <b>Sangrando</b> costuma ser mais útil que por
+     R$ perdido — parada já aconteceu, sangramento ainda dá para conter.`;
+}
+
+/* =========================================================================
+   PERDIDOS
+   ========================================================================= */
+function pintaPerdidos() {
+  const GRUPOS = [
+    ["3-5", 3, 5, "Parou há 3 a 5 meses", "Janela mais quente: o comprador ainda lembra do vendedor."],
+    ["6-11", 6, 11, "Parou há 6 a 11 meses", "Provavelmente já tem outro fornecedor. Vale entender o quê."],
+    ["12+", 12, 1e6, "Parou há 12 meses ou mais", "Reconquista, não retenção. Trate como prospecção com histórico."]
+  ];
+  document.getElementById("perdidos-kpi").innerHTML = D.perdidos_resumo.map(g => {
+    const meta = GRUPOS.find(x => x[0] === g.grupo);
+    return `<div class="cartao"><span class="kpi-rot">${meta[3]}</span>
+      <div class="kpi-val">${nf.format(g.n)} <span style="font-size:13px;font-weight:400;color:var(--tinta-2)">PDVs</span></div>
+      <div class="kpi-val" style="font-size:16px">${rs(g.gerava)}</div>
+      <div class="kpi-sub">geravam por ano antes de parar</div></div>`;
+  }).join("");
+
+  document.getElementById("perdidos-grupos").innerHTML = GRUPOS.map(([id, a, b, tit, sub]) => {
+    const l = perdidosTodos.filter(p => p.atraso >= a && p.atraso <= b)
+      .sort((x, y) => y.gerava12 - x.gerava12).slice(0, 25);
+    if (!l.length) return "";
+    return `<div style="margin-top:18px">
+      <div class="sec"><div class="sec-eyebrow">${id} meses</div><h2 style="font-size:17px">${tit}</h2>
+        <p>${sub} Mostrando os 25 maiores por valor gerado.</p></div>
+      <div class="tw"><table>
+        <thead><tr><th>PDV</th><th>Cidade</th><th>Tipologia</th><th>Vendedor</th>
+          <th class="num">Última compra</th><th class="num">Meses parado</th>
+          <th class="num">Gerava (12m)</th></tr></thead>
+        <tbody>${l.map(p => `<tr>
+          <td><button type="button" class="lnk-pdv" data-id="${p.id}"
+            style="background:none;border:0;padding:0;cursor:pointer;text-align:left;font:inherit;text-decoration:underline;text-decoration-color:var(--fio-forte);text-underline-offset:2px">${esc(p.pdv)}</button></td>
+          <td style="color:var(--tinta-2)">${esc(p.cidade)}</td>
+          <td style="color:var(--tinta-2)">${esc(p.tip)}</td>
+          <td style="color:var(--tinta-2)">${esc(p.vend)}</td>
+          <td class="num">${mesCurto(p.ult_mes)}</td>
+          <td class="num">${p.atraso}</td>
+          <td class="num">${rs(p.gerava12)}</td></tr>`).join("")}</tbody></table></div></div>`;
+  }).join("");
+
+  document.querySelectorAll(".lnk-pdv").forEach(b => b.addEventListener("click", () => {
+    const id = +b.dataset.id;
+    est.sel = id; est.faixas = new Set(ORDEM_FAIXA); est.busca = ""; est.vend = ""; est.porte = "";
+    document.getElementById("f-busca").value = ""; document.getElementById("f-vend").value = "";
+    document.getElementById("f-porte").value = "";
+    document.querySelectorAll("#f-faixa .chip-f").forEach(c => c.setAttribute("aria-pressed", "true"));
+    pintaFila(); pintaDet(); abre("fila");
+  }));
+}
+
+/* =========================================================================
+   VISÃO GERAL
+   ========================================================================= */
+const RAMPA = ["--r0","--r1","--r2","--r3","--r4"];
+function corRisco(t, tMax) {
+  if (t === null) return null;
+  const i = Math.min(RAMPA.length - 1, Math.floor((t / tMax) * RAMPA.length));
+  return `var(${RAMPA[i]})`;
+}
+
+/* Cor de texto da célula escolhida por CONTRASTE MEDIDO, não por um limiar
+   chutado sobre o valor. A rampa vai claro→escuro no tema claro e escuro→claro
+   no escuro; qualquer regra fixa acerta num tema e erra no outro. */
+const _cache = {};
+function resolve(varName) {
+  if (_cache[varName]) return _cache[varName];
+  const p = document.createElement("span");
+  p.style.color = `var(${varName})`; p.style.position = "absolute"; p.style.opacity = "0";
+  document.body.appendChild(p);
+  const rgb = getComputedStyle(p).color.match(/[\d.]+/g).slice(0, 3).map(Number);
+  p.remove();
+  return (_cache[varName] = rgb);
+}
+function relLum([r, g, b]) {
+  const f = c => (c /= 255) <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contraste(a, b) {
+  const [x, y] = [relLum(a), relLum(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+}
+function textoSobre(varFundo) {
+  const bg = resolve(varFundo);
+  const opcoes = ["--tinta", "--sobre-rampa", "--carta"];
+  return opcoes.map(v => [v, contraste(resolve(v), bg)]).sort((a, b) => b[1] - a[1])[0][0];
+}
+
+function desenhaGeral() {
+  /* --- distribuição --- */
+  const fx = ORDEM_FAIXA.map(id => D.faixas.find(f => f.id === id)).filter(Boolean);
+  const total = fx.reduce((s, f) => s + f.n, 0), maxN = Math.max(...fx.map(f => f.n));
+  document.getElementById("dist-sub").textContent =
+    `${nf.format(total)} PDVs ativos. Barras separadas e rotuladas — cor nunca sozinha.`;
+  document.getElementById("dist").innerHTML = fx.map(f => `
+    <div class="dist-l" style="--fx:${FAIXA[f.id].cor}">
+      <span class="nm"><i></i>${f.rotulo}</span>
+      <span class="tr"><span class="fl" style="width:${100 * f.n / maxN}%"></span></span>
+      <span class="n">${nf.format(f.n)}</span>
+      <span class="r">${f.perdido > 0 ? rs(f.perdido) : "—"}</span>
+    </div>`).join("") +
+    `<div class="dist-l" style="margin-top:5px;border-top:1px solid var(--fio);padding-top:5px">
+      <span class="nm" style="font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tinta-3)">PDVs · R$ perdido</span>
+      <span></span><span class="n">${nf.format(total)}</span>
+      <span class="r">${rs(fx.reduce((s, f) => s + f.perdido, 0))}</span></div>`;
+  document.querySelectorAll("#dist .dist-l .tr").forEach((el, i) => {
+    const f = fx[i]; if (!f) return;
+    ligaTip(el, `<b>${f.rotulo}</b><br>${nf.format(f.n)} PDVs (${pc1(f.n / total)})<br>
+      receita 12m ${rs(f.rec12)}<br>R$ perdido ${rs(f.perdido)}`);
+  });
+
+  /* --- escada --- */
+  const e = D.calibracao.escada.filter(x => x.total > 0);
+  const W = 460, H = 190, pl = 34, pb = 40, pt = 12;
+  const bw = (W - pl - 10) / e.length, maxT = Math.max(...e.map(x => x.taxa));
+  const yy = v => pt + (H - pt - pb) * (1 - v / (maxT * 1.14));
+  let g = "";
+  [0, .25, .5, .75].filter(v => v <= maxT * 1.14).forEach(v => {
+    g += `<line class="gl" x1="${pl}" y1="${yy(v)}" x2="${W - 6}" y2="${yy(v)}"></line>
+      <text class="ax" x="${pl - 6}" y="${yy(v) + 3}" text-anchor="end">${Math.round(v * 100)}%</text>`;
+  });
+  e.forEach((x, i) => {
+    const bx = pl + i * bw + 5, w = bw - 10, h = H - pb - yy(x.taxa);
+    g += `<rect class="he" data-i="${i}" x="${bx}" y="${yy(x.taxa)}" width="${w}" height="${h}"
+      rx="2" fill="var(${RAMPA[Math.min(4, i + 1)]})"></rect>
+      <text class="vlab" x="${bx + w / 2}" y="${yy(x.taxa) - 5}" text-anchor="middle"
+        style="font-weight:600;fill:var(--tinta)">${pc1(x.taxa)}</text>
+      <text class="ax" x="${bx + w / 2}" y="${H - pb + 14}" text-anchor="middle"
+        >${x.sinais} ${x.sinais === 1 ? "sinal" : "sinais"}</text>
+      <text class="ax" x="${bx + w / 2}" y="${H - pb + 26}" text-anchor="middle"
+        >n=${nf.format(x.total)}</text>`;
+  });
+  g += `<line class="bl" x1="${pl}" y1="${H - pb}" x2="${W - 6}" y2="${H - pb}"></line>`;
+  document.getElementById("escada").innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" role="img"
+      aria-label="Taxa de desfecho ruim por número de sinais">${g}</svg>`;
+  document.querySelectorAll("#escada .he").forEach(b => {
+    const x = e[+b.dataset.i];
+    ligaTip(b, `<b>${x.sinais} ${x.sinais === 1 ? "sinal" : "sinais"}</b><br>
+      ${nf.format(x.ruins)} de ${nf.format(x.total)} tiveram desfecho ruim<br>${pc1(x.taxa)}`);
+  });
+  const e0 = e[0], eN = e[e.length - 1];
+  document.getElementById("escada-nota").innerHTML =
+    `<b>Desfecho ruim</b> = ${D.calibracao.definicao_desfecho}. Cortes em
+     ${D.calibracao.cortes.map(mesCurto).join(", ")} · ${nf.format(D.calibracao.observacoes)}
+     observações. Com nenhum sinal, ${pc1(e0.taxa)} pioram de qualquer forma — é o ruído de fundo da
+     carteira, e nenhuma régua vai abaixo dele. Com os três, ${pc1(eN.taxa)}:
+     <b>${nf1.format(eN.taxa / e0.taxa)}×</b> o risco de base. Os cortes distam 6 meses, então as
+     janelas se sobrepõem e as observações não são independentes: serve para ordenar risco, não para
+     cravar probabilidade.`;
+
+  /* --- heatmap --- */
+  const hm = D.calibracao.heatmap, ATR = ["0","1","2","3-5","6+"];
+  const maxTaxa = Math.max(...hm.filter(h => h.taxa !== null).map(h => h.taxa));
+  let html = `<div class="hm-r"><span></span>${ATR.map(a =>
+    `<span class="hm-h">${a === "0" ? "comprou" : a + (a === "1" ? " mês" : " meses")}</span>`).join("")}</div>`;
+  Object.keys(RITMO).forEach(r => {
+    html += `<div class="hm-r"><span class="hm-l">${RITMO[r]}</span>` + ATR.map(a => {
+      const c = hm.find(h => h.ritmo === r && h.atraso === a);
+      if (!c || c.total === 0)
+        return `<span class="hm-c hm-x" title="combinação impossível pela definição">—</span>`;
+      const iR = Math.min(RAMPA.length - 1, Math.floor((c.taxa / maxTaxa) * RAMPA.length));
+      return `<span class="hm-c" data-r="${r}" data-a="${a}" tabindex="0"
+        style="background:var(${RAMPA[iR]});color:var(${textoSobre(RAMPA[iR])})">${pc1(c.taxa)}
+        <small>n=${nf.format(c.total)}</small></span>`;
+    }).join("") + `</div>`;
+  });
+  document.getElementById("heat").innerHTML = html;
+  document.querySelectorAll("#heat .hm-c[data-r]").forEach(el => {
+    const c = hm.find(h => h.ritmo === el.dataset.r && h.atraso === el.dataset.a);
+    ligaTip(el, `<b>${RITMO[c.ritmo]} · ${c.atraso} ${c.atraso === "0" ? "mês de atraso" : "meses"}</b><br>
+      ${nf.format(c.ruins)} de ${nf.format(c.total)} com desfecho ruim<br>${pc1(c.taxa)}`);
+  });
+  document.getElementById("heat-leg").innerHTML =
+    `<span>menor risco</span><span class="esc">${RAMPA.map(v => `<i style="background:var(${v})"></i>`).join("")}</span>
+     <span>maior risco</span>
+     <span style="margin-left:12px;display:flex;align-items:center;gap:6px">
+       <i class="hm-x" style="width:22px;height:11px;display:block;border-radius:2px"></i>
+       não existe na definição</span>`;
+  const cTodo = hm.find(h => h.ritmo === "quase_todo_mes" && h.atraso === "3-5");
+  const cEsp = hm.find(h => h.ritmo === "esporadico" && h.atraso === "3-5");
+  document.getElementById("heat-nota").innerHTML =
+    `Leia a coluna <b>3-5 meses</b> de cima para baixo: quem comprava quase todo mês e está 3 a 5
+     meses sem comprar acaba mal em <b>${pc1(cTodo.taxa)}</b> dos casos; um cliente esporádico, no
+     mesmo atraso, em <b>${pc1(cEsp.taxa)}</b>. É o mesmo atraso e é quase
+     ${nf1.format(cTodo.taxa / cEsp.taxa)}× o risco. Cobrar os dois igual gasta a viagem do vendedor
+     no cliente errado. As células hachuradas não são risco zero: quem comprou em 11 dos 12 meses
+     não <em>pode</em> estar 3 meses sem comprar.`;
+}
+
+/* =========================================================================
+   METODOLOGIA
+   ========================================================================= */
+function escala(min, max, marcas, limiar, rotLimiar, zonaDe, zonaAte) {
+  const p = v => 100 * (v - min) / (max - min);
+  return `<div class="escala"><div class="lin">
+    <div class="base"></div>
+    ${zonaDe !== undefined ? `<div class="zona" style="left:${p(zonaDe)}%;width:${p(zonaAte) - p(zonaDe)}%"></div>` : ""}
+    ${marcas.map(v => `<div class="tick" style="left:${p(v)}%"></div>`).join("")}
+    <div class="lim" style="left:${p(limiar)}%"></div>
+    <div class="lim-l" style="left:${p(limiar)}%">${rotLimiar}</div>
+  </div><div class="ends"><span>${min > 0 ? "+" : ""}${min}%</span><span>${max > 0 ? "+" : ""}${max}%</span></div></div>`;
+}
+
+document.getElementById("prosa").innerHTML = `
+<h3>O problema</h3>
+<p>Numa carteira concentrada, a receita total mente. O 1% maior dos PDVs responde por cerca de um
+quarto do faturamento, então um punhado de contas grandes segura o número agregado enquanto dezenas
+de clientes definham por baixo. Nesta base a receita cresceu ${pc(M.var_receita, 1)} no ano — e ainda
+assim <b>${rs(M.perdido_total)}</b> vazaram de PDVs que compraram menos que no ano anterior. As duas
+coisas são verdade ao mesmo tempo. O agregado não é o lugar de olhar.</p>
+<p class="dest">A régua tem que ser por cliente, contra o mesmo período do ano anterior, e tem que
+distinguir o cliente que sumiu do cliente que nunca comprou muito.</p>
+
+<h3>Por que comparar semestre contra semestre</h3>
+<p>Distribuição alimentar é sazonal: nesta carteira janeiro e fevereiro valem cerca de 80% de um mês
+médio e o período de agosto a dezembro passa de 110%. Comparar “últimos 6 meses” com “6 meses
+anteriores” faz todo cliente parecer que despencou em janeiro e que ressuscitou em setembro. Por isso
+a comparação é <b>${MESN[0]}–${MESN[5]} deste ano contra ${MESN[0]}–${MESN[5]} do ano anterior</b>:
+mesmo período, mesma sazonalidade, sobra só o que mudou no cliente.</p>
+<p>O mês de referência é sempre o <b>último mês fechado</b> da base — aqui
+${mesCurto(M.mes_referencia)}. Mês em andamento não entra: ele está sempre incompleto e faz todo
+mundo parecer em queda.</p>
+
+<h3>Sinal 1 · Receita</h3>
+<p>Receita do semestre caiu mais de <b>${Math.abs(R.receita * 100)}%</b> contra o mesmo semestre do
+ano anterior.</p>
+${escala(-100, 20, [-100,-75,-50,-25,0], R.receita * 100, "−30% dispara", -100, R.receita * 100)}
+<p>Sem receita no semestre do ano anterior, o sinal fica <b>desligado</b> em vez de disparar. Não se
+afirma queda de 100% sobre uma base que não existe — cliente novo não é cliente em fuga, e essa
+distinção é a diferença entre uma fila útil e uma fila que o vendedor aprende a ignorar.</p>
+
+<h3>Sinal 2 · Frequência</h3>
+<p>O cliente passou a comprar em <b>${Math.abs(R.frequencia)} meses a menos</b> dentro do semestre.
+Conta só mês com <b>valor maior que zero</b>.</p>
+<p>Isso não é preciosismo. A base tem <b>${nf.format(M.linhas_valor_zero)}</b> linhas de R$ 0,00
+(bonificação, troca, devolução que zerou) e há <b>${nf.format(D.destaques.freq_inflada)}</b> PDVs cuja
+contagem de meses ficaria inflada se a régua aceitasse qualquer linha como “compra”. São exatamente
+os PDVs que mais interessam: alguns já pararam de comprar e continuam aparecendo no sistema com
+movimento de valor zero, parecendo ativos.</p>
+
+<h3>Sinal 3 · Mix</h3>
+<p>Categorias distintas compradas no <b>2º trimestre</b> caíram mais de
+<b>${Math.abs(R.mix * 100)}%</b> contra o mesmo trimestre do ano anterior.</p>
+${escala(-100, 20, [-100,-75,-50,-25,0], R.mix * 100, "−25% dispara", -100, R.mix * 100)}
+<p>É o sinal que pega a perda que a receita esconde: o cliente mantém o volume mas larga metade do
+portfólio, comprando mais de menos coisas. Quando o concorrente entra, quase sempre entra assim —
+por categoria, não pelo pedido inteiro. Um trimestre em vez de um semestre porque contagem de
+categoria distinta satura: numa janela de seis meses quase todo mundo acaba comprando quase tudo, e
+a queda desaparece na conta.</p>
+
+<h3>As faixas</h3>
+<ul>
+  <li><b>Parou</b> — ${R.meses_para_parou}+ meses sem nenhuma compra. Precede tudo: não faz sentido
+    discutir tendência de quem não está comprando.</li>
+  <li><b>Voltou</b> — voltou a comprar depois de ${R.meses_para_parou}+ meses sumido. Tem regra
+    própria e <em>não</em> pode cair em Sangrando: quem acabou de voltar apareceria com queda enorme
+    no semestre, e mandar o vendedor cobrar queda de um cliente que acabou de voltar é o jeito mais
+    rápido de perdê-lo de novo. São <b>${nf.format(contaFaixa.voltou || 0)}</b> PDVs nesta base.</li>
+  <li><b>Sangrando</b> — dois sinais disparados, <em>ou</em> um só em nível extremo
+    (receita ${Math.abs(R.extremo_receita * 100)}%, frequência ${Math.abs(R.extremo_frequencia)} meses,
+    mix ${Math.abs(R.extremo_mix * 100)}%). A cláusula do extremo existe porque o caso mais caro
+    dispara um sinal só.</li>
+  <li><b>Degradando</b> — um sinal.</li>
+  <li><b>Observar</b> — receita entre −10% e −30%, sem sinal disparado.</li>
+  <li><b>Estável</b> — receita entre −10% e +10%.</li>
+  <li><b>Crescendo</b> — acima de +10%. <b>Novo</b> — entrou há menos de 18 meses, sem base de
+    comparação. Faixas sem risco, mas precisam existir para a distribuição fechar em 100%.</li>
+</ul>
+
+<h3>O caso que a metodologia existe para achar</h3>
+<p>Chamo de <b>sangramento silencioso</b>: o cliente compra <em>todo mês</em>, a frequência está
+intacta, ninguém no comercial percebe nada — e a receita caiu pela metade ou mais. Nenhum relatório
+de inadimplência pega, nenhum alerta de “cliente sem compra” pega. Nesta base são
+<b>${nf.format(D.destaques.silenciosos.n)} PDVs</b> somando
+<b>${rs(D.destaques.silenciosos.perdido)}</b>.</p>
+${(() => {
+  // Derivado dos dados, e não escrito à mão: se a base for gerada de novo com
+  // outra semente, o texto acompanha em vez de virar mentira.
+  const s = D.pdvs.filter(p => p.faixa === "sangrando" && p.var_rec !== null
+      && p.var_rec <= R.extremo_receita && (p.freq_atual - p.freq_ant) >= -1)
+    .sort((a, b) => b.perdido - a.perdido)[0];
+  if (!s) return "";
+  return `<p class="dest">O maior deles é <b>${esc(s.pdv)}</b>, que era o
+    ${s.rank_ant === 1 ? "maior cliente" : "nº " + nf.format(s.rank_ant)} da carteira. Comprou nos
+    ${s.freq_atual} meses do semestre, como sempre — e entregou ${pc(s.var_rec)} contra o ano
+    anterior, ${rs(s.perdido)} a menos em 12 meses. Nenhum alerta de “cliente sem compra” dispara
+    nesse caso, porque ele está comprando.</p>`;
+})()}
+
+<h3>As duas listas de categoria, e por que a régua é outra</h3>
+<p>Os sinais servem para <em>classificar</em>. As listas do painel servem para o vendedor
+<em>ligar para o cliente</em>, e por isso são mais rigorosas:</p>
+<ul>
+  <li><b>Parou de comprar</b> — categoria comprada em <b>${R.min_meses_abandono}+ meses distintos</b>
+    nos 12 meses anteriores <em>e</em> zero nos últimos ${R.janela_recente}. O valor é o que ela gerou
+    naqueles 12 meses, real, sem anualizar.</li>
+  <li><b>Continua comprando</b> — teve compra nos últimos ${R.janela_recente} meses, com em quantos
+    deles (x/6) e a receita de 12 meses.</li>
+</ul>
+<p>O filtro de <b>${R.min_meses_abandono}+ meses distintos</b> é o que faz a lista ser confiável. Sem
+ele, uma compra sazonal avulsa — o panetone de novembro, o sorvete do verão — entra como categoria
+abandonada, e o vendedor liga cobrando um produto que o cliente nunca comprou de verdade. Basta
+acontecer duas ou três vezes para a lista inteira perder credibilidade.</p>
+<p>Os seis meses de silêncio, em vez de três, são pela mesma razão em outra direção: ninguém deve
+receber a tarefa de cobrar uma categoria que o cliente comprou mês passado.</p>
+
+<h3>Ranking e porte</h3>
+<p>Posição por receita de 12 meses, no geral e dentro da tipologia, mais a variação contra os 12
+meses anteriores. A variação é o que transforma “caiu 30%” em algo com escala:
+<b>${esc(D.destaques.maior_queda_ranking.pdv)}</b> era o
+nº ${nf.format(D.destaques.maior_queda_ranking.de)} da carteira e hoje é o
+nº ${nf.format(D.destaques.maior_queda_ranking.para)} —
+<b>${nf.format(D.destaques.maior_queda_ranking.posicoes)} posições</b> abaixo.</p>
+<p>Duas ressalvas honestas. Cada janela é ranqueada entre os PDVs que faturaram <em>naquela</em>
+janela, então os dois rankings têm denominadores diferentes e a variação é indicativa. E na cauda as
+posições estão coladas: R$ 200 de diferença movem centenas de lugares, o que é ruído. Por isso a
+queda de posição só é destacada para quem já era grande.</p>
+
+<h3>Como a calibração é feita</h3>
+<p>Os números da escada e do heatmap não são chutados nem trazidos de fora: saem de um
+<b>backtest</b> na própria base. Corta-se num mês do passado, medem-se os sinais usando
+<em>somente</em> dados até ali, e confere-se o que aconteceu nos 12 meses seguintes —
+${D.calibracao.definicao_desfecho}. São ${D.calibracao.cortes.length} cortes
+(${D.calibracao.cortes.map(mesCurto).join(", ")}) e ${nf.format(D.calibracao.observacoes)}
+observações. É também o motivo de a base ter 5 anos e não 2: sem horizonte à frente do corte, não há
+o que conferir.</p>
+
+<h3>Sobre os dados</h3>
+<p>A base é <b>100% sintética</b>, gerada por script. São ${nf.format(M.pdvs_cadastrados)} PDVs
+cadastrados (${nf.format(M.pdvs_ativos_12m)} ativos nos últimos 12 meses), ${M.meses_base} meses,
+${nf.format(M.categorias)} categorias e ${nf.format(M.linhas_fato)} linhas de venda mensal, com
+${nf.format(M.vendedores)} vendedores sob ${M.supervisores} supervisores. Nomes de PDV, cidades e
+categorias são inventados por composição.</p>
+<p>O gerador é calibrado para reproduzir o que faz a metodologia ser necessária: concentração
+Pareto (top 1% ≈ ${pc1(D.validacao.geracao.pareto.top_1pct)} da receita, top 10% ≈
+${pc1(D.validacao.geracao.pareto.top_10pct)}, top 20% ≈ ${pc1(D.validacao.geracao.pareto.top_20pct)}),
+sazonalidade (jan–fev em ${pc1(D.validacao.geracao.sazonalidade_jan_fev)} de um mês médio, ago–dez em
+${pc1(D.validacao.geracao.sazonalidade_ago_dez)}), tendência de
+${pc(D.validacao.geracao.crescimento_tendencia, 1)} ao ano e a mistura de ritmos de compra.</p>
+<p>Os casos de queda foram <b>plantados de propósito</b> — sangramento silencioso, parada súbita,
+perda de mix, sumiu-e-voltou, corte de portfólio em degrau — o que permite medir se o detector acha o
+que existe:</p>
+<div class="tw" style="margin-bottom:13px"><table>
+  <thead><tr><th>Caso plantado</th><th class="num">Plantados</th><th class="num">Encontrados</th>
+    <th class="num">Recall</th></tr></thead>
+  <tbody>${Object.entries(D.validacao.recall).filter(([k]) => k !== "atrito").map(([k, v]) =>
+    `<tr><td>${k}</td><td class="num">${nf.format(v.plantados)}</td>
+      <td class="num">${nf.format(v.achados)}</td><td class="num">${pc1(v.recall)}</td></tr>`).join("")}</tbody>
+</table></div>
+<p class="dest">Esse recall mede que a implementação está correta — que a régua encontra o que foi
+plantado. Não é uma promessa de desempenho em base real, onde a deterioração não vem rotulada e não
+foi desenhada para ser detectável. Quem apresenta recall de base sintética como acurácia de produção
+está vendendo o próprio gerador.</p>
+`;
+
+/* ---------------- redesenho por troca de tema (SVG usa var() resolvida) ---------------- */
+function redesenha() {
+  for (const k in _cache) delete _cache[k];   // tokens mudaram de valor
+  if (!document.getElementById("tela-geral").hidden) desenhaGeral();
+  if (est.sel !== null) pintaDet();
+  pintaEquipe();
+}
+
+/* ---------------- arranque ---------------- */
+pintaFila(); pintaEquipe(); pintaPerdidos();
+const alvo = D.pdvs.reduce((a, b) => (b.faixa === "sangrando" && b.perdido > (a?.perdido ?? -1) ? b : a), null);
+if (alvo) { est.sel = alvo.id; pintaFila(); pintaDet(); }
+</script>

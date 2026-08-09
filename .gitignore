@@ -1,0 +1,17 @@
+# Bases geradas grandes. Ficam fora do repositório porque são reproduzíveis
+# BYTE A BYTE pelo gerador (semente fixa, mtime=0 no gzip): rodar
+# `python gerador_base.py` recria exatamente estes arquivos.
+dados/vendas.csv.gz
+dados/payload_dashboard.json
+
+# As dimensões, a amostra e o resumo de validação continuam versionados —
+# são pequenos e deixam o repositório navegável sem precisar rodar nada.
+
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+Thumbs.db
+
+# Material de bastidor do anúncio (copy, o que fotografar). Fica local.
+workana-portfolio.md
