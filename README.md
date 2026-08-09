@@ -7,6 +7,8 @@ quais continuam comprando **todo mês** enquanto entregam metade do que entregav
 Dashboard de uma página, sem dependências, sobre uma base **100% sintética** gerada
 por script. Nenhum número vem de cliente real.
 
+**▶ Ver o painel: [camargomateus.github.io/termometro-carteira](https://camargomateus.github.io/termometro-carteira/)**
+
 ```bash
 python gerador_base.py      # gera a base       (~8 s)
 python termometro.py        # aplica a metodologia (~6 s)
