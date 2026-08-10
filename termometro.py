@@ -47,10 +47,8 @@ ESTAVEL_DE, ESTAVEL_ATE = -0.10, 0.10
 MIN_MESES_PARA_ABANDONO = 3  # categoria precisa ter sido comprada em 3+ meses
 JANELA_RECENTE = 6           # "últimos 6 meses"
 
-SERIE_MESES = 24             # série mensal do painel de detalhe.
-#   24 e não 18: com 18 meses a janela de comparação do ano anterior (jan-jun)
-#   cai parcialmente fora do gráfico, e o usuário lê "-81%" sem conseguir ver
-#   contra o que. 24 meses mostram as duas janelas inteiras.
+SERIE_MESES = 18             # série mensal do painel de detalhe: cobre jan do ano
+#   anterior até o mês de referência, ou seja, as duas janelas comparadas inteiras.
 TOP_CATEGORIAS = 12          # itens por lista no payload
 
 # Backtest: cortes usados na calibração (índices de mês)
@@ -70,11 +68,15 @@ DESFECHO_MESES_MUDOS = 6     # ou ficou os últimos 6 meses sem comprar nada
 
 
 def janelas(M: int) -> dict:
+    # O mês de referência ENTRA no semestre corrente. Com M = junho, (M-5 .. M) é
+    # jan-jun deste ano e (M-17 .. M-12) é jan-jun do anterior — as duas janelas
+    # cabem inteiras nos 18 meses do gráfico de detalhe, e o último mês fechado
+    # não fica de fora da conta só por ser o último.
     return {
-        "sem_atual":   (M - 6, M - 1),      # jan-jun do ano corrente
-        "sem_ant":     (M - 18, M - 13),    # jan-jun do ano anterior
-        "tri_atual":   (M - 3, M - 1),      # 2º trimestre do ano corrente
-        "tri_ant":     (M - 15, M - 13),    # 2º trimestre do ano anterior
+        "sem_atual":   (M - 5, M),          # jan-jun do ano corrente
+        "sem_ant":     (M - 17, M - 12),    # jan-jun do ano anterior
+        "tri_atual":   (M - 2, M),          # 2º trimestre do ano corrente
+        "tri_ant":     (M - 14, M - 12),    # 2º trimestre do ano anterior
         "ult12":       (M - 11, M),
         "ant12":       (M - 23, M - 12),
         "ult6":        (M - JANELA_RECENTE + 1, M),

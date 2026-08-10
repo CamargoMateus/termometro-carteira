@@ -58,8 +58,8 @@ from collections import defaultdict
 
 SEED = 20260808
 
-ANO_INI, MES_INI = 2021, 8          # primeiro mês da base
-N_MESES = 60                        # até 2026-07 (último mês fechado)
+ANO_INI, MES_INI = 2021, 7          # primeiro mês da base
+N_MESES = 60                        # até 2026-06 (último mês fechado)
 
 N_PDV = 4200                        # cadastrados ao longo dos 5 anos
 N_VENDEDORES = 90

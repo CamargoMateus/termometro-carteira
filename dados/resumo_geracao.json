@@ -1,39 +1,39 @@
 {
-  "linhas": 421861,
-  "linhas_valor_zero": 6894,
+  "linhas": 421835,
+  "linhas_valor_zero": 6890,
   "pdvs_cadastrados": 4200,
-  "pdvs_ativos_ult_12m": 3025,
-  "receita_ult_12m": 118875334.49,
+  "pdvs_ativos_ult_12m": 3024,
+  "receita_ult_12m": 118876170.76,
   "pareto": {
-    "top_1pct": 0.2531,
-    "top_5pct": 0.5007,
-    "top_10pct": 0.6489,
-    "top_20pct": 0.7978
+    "top_1pct": 0.2522,
+    "top_5pct": 0.5014,
+    "top_10pct": 0.6494,
+    "top_20pct": 0.7982
   },
   "sazonalidade_observada": {
-    "1": 0.756,
-    "2": 0.88,
-    "3": 0.938,
-    "4": 0.982,
-    "5": 0.998,
-    "6": 0.982,
-    "7": 0.997,
-    "8": 1.081,
-    "9": 1.01,
-    "10": 1.065,
-    "11": 1.155,
-    "12": 1.156
+    "1": 0.838,
+    "2": 0.815,
+    "3": 0.967,
+    "4": 0.971,
+    "5": 1.006,
+    "6": 0.964,
+    "7": 1.021,
+    "8": 1.006,
+    "9": 1.042,
+    "10": 1.109,
+    "11": 1.175,
+    "12": 1.086
   },
-  "sazonalidade_jan_fev": 0.818,
-  "sazonalidade_ago_dez": 1.093,
+  "sazonalidade_jan_fev": 0.827,
+  "sazonalidade_ago_dez": 1.084,
   "crescimento_anual": [
-    0.1583,
-    0.0885,
-    0.1392,
-    0.0073
+    0.1561,
+    0.089,
+    0.1365,
+    0.01
   ],
-  "crescimento_ult_ano": 0.0073,
-  "crescimento_tendencia": 0.1263,
+  "crescimento_ult_ano": 0.01,
+  "crescimento_tendencia": 0.1302,
   "regimes": {
     "mensal": 2281,
     "ciclico": 932,
@@ -52,8 +52,8 @@
   },
   "seed": 20260808,
   "periodo": [
-    "2021-08",
-    "2026-07"
+    "2021-07",
+    "2026-06"
   ],
   "categorias": 200,
   "vendedores": 90,
