@@ -9,6 +9,30 @@ por script. Nenhum número vem de cliente real.
 
 **▶ Ver o painel: [camargomateus.github.io/termometro-carteira](https://camargomateus.github.io/termometro-carteira/)**
 
+![Fila de risco](capturas/1-fila-de-risco.png)
+
+A fila de risco com o detalhe de um PDV aberto: os quatro sinais, a série de 18
+meses com as duas janelas comparadas, e as categorias que o cliente abandonou.
+
+<table>
+<tr>
+<td width="50%"><a href="capturas/2-visao-geral.png"><img src="capturas/2-visao-geral.png" alt="Visão geral"></a><br>
+<sub><b>Visão geral</b> — distribuição da carteira e a escada de calibração</sub></td>
+<td width="50%"><a href="capturas/3-metodologia.png"><img src="capturas/3-metodologia.png" alt="Metodologia"></a><br>
+<sub><b>Metodologia</b> — como cada régua é calculada, e por quê</sub></td>
+</tr>
+<tr>
+<td width="50%"><a href="capturas/4-equipe.png"><img src="capturas/4-equipe.png" alt="Equipe"></a><br>
+<sub><b>Equipe</b> — R$ perdido concentrado por vendedor</sub></td>
+<td width="50%"><a href="capturas/5-perdidos.png"><img src="capturas/5-perdidos.png" alt="Perdidos"></a><br>
+<sub><b>Perdidos</b> — fila de reativação por tempo parado</sub></td>
+</tr>
+</table>
+
+Cada aba tem endereço próprio (`#fila`, `#geral`, `#equipe`, `#perdidos`,
+`#metodo`), então dá para mandar o link de uma tela específica. As capturas são
+geradas por `capturar_telas.py`, que roda o Chrome em modo headless.
+
 ```bash
 python gerador_base.py      # gera a base       (~8 s)
 python termometro.py        # aplica a metodologia (~6 s)
@@ -208,6 +232,7 @@ contra o quê.
 gerador_base.py         gera e valida a base sintética
 termometro.py           metodologia: sinais, faixas, listas, ranking, backtest
 build_dashboard.py      injeta o payload no template
+capturar_telas.py       gera as capturas em PNG 16:9 (Chrome headless)
 dashboard_template.html a página (HTML/CSS/JS, sem dependências)
 index.html              saída publicável, autocontida (servida pelo Pages)
 dados/

@@ -492,13 +492,20 @@ const ABAS=[["fila","Fila de risco"],["equipe","Equipe"],["perdidos","Perdidos"]
 document.getElementById("abas").innerHTML = ABAS.map(([id,rot],i)=>
   `<button class="aba" role="tab" id="aba-${id}" aria-controls="tela-${id}"
      aria-selected="${i===0}">${rot}</button>`).join("");
-function abre(id){
+function abre(id, semHash){
   ABAS.forEach(([x])=>{ document.getElementById("aba-"+x).setAttribute("aria-selected",String(x===id));
     document.getElementById("tela-"+x).hidden = x!==id; });
   if(id==="geral") desenhaGeral();
+  // cada aba tem endereço próprio: dá para mandar o link de uma tela específica,
+  // e permite capturar cada tela sem depender de clique.
+  if(!semHash && location.hash.slice(1)!==id) history.replaceState(null,"","#"+id);
   scrollTo({top:0,behavior:"instant"});
 }
 ABAS.forEach(([id])=>document.getElementById("aba-"+id).addEventListener("click",()=>abre(id)));
+addEventListener("hashchange",()=>{
+  const id=location.hash.slice(1);
+  if(ABAS.some(([x])=>x===id)) abre(id,true);
+});
 
 /* =================== FILA =================== */
 const est={faixas:new Set(["parou","sangrando","degradando","observar","voltou"]),
@@ -1063,6 +1070,8 @@ function redesenha(){
 }
 
 sincronizaPills(); pintaFila(); pintaEquipe(); pintaPerdidos();
+const abaInicial = location.hash.slice(1);
+if(ABAS.some(([x])=>x===abaInicial)) abre(abaInicial, true);
 const alvo = D.pdvs.filter(p=>p.faixa==="sangrando").sort((a,b)=>b.perdido-a.perdido)[0];
 if(alvo){ est.sel=alvo.id; pintaFila(); pintaDet(); }
 </script>
